@@ -819,7 +819,7 @@ def mtmlDeviceGetPciInfo(device):
         c_pciinfo.busId = c_pciinfo.sbdf
     return c_pciinfo
 
-
+@convertStrBytes
 def mtmlDeviceGetSerialNumber(device):
     global libHandle
     c_serial = create_string_buffer(MTML_DEVICE_SERIAL_NUMBER_BUFFER_SIZE)
@@ -969,7 +969,7 @@ def mtmlVpuGetMaxClock(vpu):
     _mtmlCheckReturn(ret)
     return c_clock.value
 
-
+@convertStrBytes
 def mtmlSystemGetDriverVersion(system):
     c_version = create_string_buffer(MTML_SYSTEM_DRIVER_VERSION_BUFFER_SIZE)
     fn = _mtmlGetFunctionPointer("mtmlSystemGetDriverVersion")
