@@ -16,7 +16,14 @@ Moore Threads GPUs use MUSA (Meta-computing Unified System Architecture) as thei
 
 ## Installation
 
-Copy `pymtml.py` to your project or add it to your Python path.
+```bash
+pip install mthreads-ml-py
+
+# Or install from source
+git clone https://github.com/MooreThreads/mthreads-ml-py.git
+cd mthreads-ml-py
+pip install -e .
+```
 
 ## Quick Start
 
