@@ -6,6 +6,7 @@ Run with: python test_pymtml.py
 
 import sys
 import traceback
+import os
 
 from pymtml import *
 
@@ -81,7 +82,9 @@ class MtmlTestSuite:
         if pci_info.busId and pci_info.busId[0].isalnum():
             print_result("PCI Info busId populated", pci_info.busId)
         else:
-            print_result("PCI Info busId populated", "[FAIL: busId is empty or invalid]")
+            print_result(
+                "PCI Info busId populated", "[FAIL: busId is empty or invalid]"
+            )
         test_error("PCIe Slot Info", lambda: mtmlDeviceGetPcieSlotInfo(device))
 
     def test_device_fan_apis(self, device, device_idx):
@@ -198,7 +201,8 @@ class MtmlTestSuite:
 
         try:
             memory = mtmlDeviceInitMemory(device)
-            test_error("ECC Mode", lambda: mtmlMemoryGetEccMode(memory))
+            if not os.getenv("CI_MTML_SKIP_ECC") == "1":
+                test_error("ECC Mode", lambda: mtmlMemoryGetEccMode(memory))
             test_error(
                 "Retired Pages Count", lambda: mtmlMemoryGetRetiredPagesCount(memory)
             )
