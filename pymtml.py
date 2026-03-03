@@ -647,13 +647,42 @@ def _LoadMtmlLibrary():
         try:
             # ensure the library still isn't loaded
             if mtmlLib == None:
-                try:
-                    # assume linux
-                    mtmlLib = CDLL("libmtml.so")
-                except OSError as ose:
-                    _mtmlCheckReturn(MTML_ERROR_FUNCTION_NOT_FOUND)
+                # Platform-specific library loading
+                platform = sys.platform
+                
+                if platform.startswith("win32") or platform.startswith("cygwin"):
+                    # Windows platform
+                    lib_names = ["mtml.dll", "libmtml.dll"]
+                    lib_loader = WinDLL
+                else:
+                    # Linux/Unix platform
+                    lib_names = ["libmtml.so"]
+                    lib_loader = CDLL
+                
+                # Try loading the library with different names
+                last_error = None
+                for lib_name in lib_names:
+                    try:
+                        mtmlLib = lib_loader(lib_name)
+                        break
+                    except OSError as ose:
+                        last_error = ose
+                        continue
+                
+                # If all attempts failed, try with full path to mtml/mtml.dll
+                if mtmlLib is None and (platform.startswith("win32") or platform.startswith("cygwin")):
+                    try:
+                        import os
+                        dll_path = os.path.join(os.path.dirname(__file__), "mtml", "mtml.dll")
+                        mtmlLib = WinDLL(dll_path)
+                    except OSError as ose:
+                        last_error = ose
+                
                 if mtmlLib == None:
-                    _mtmlCheckReturn(MTML_ERROR_FUNCTION_NOT_FOUND)
+                    error_msg = f"Failed to load MTML library. Tried: {', '.join(lib_names)}"
+                    if last_error:
+                        error_msg += f"\nLast error: {last_error}"
+                    raise OSError(error_msg)
         finally:
             # lock is always freed
             libLoadLock.release()

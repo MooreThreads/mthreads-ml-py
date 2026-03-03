@@ -4,7 +4,7 @@
 
 **pymtml** is Python bindings for the Moore Threads Management Library (MTML) - a C-based API for monitoring and managing Moore Threads GPU devices. It provides:
 
-1. **Native MTML bindings** - Direct Python wrappers for libmtml.so C library functions
+1. **Native MTML bindings** - Direct Python wrappers for MTML C library functions (Linux: libmtml.so, Windows: mtml.dll)
 2. **NVML compatibility layer** - Drop-in replacement for NVIDIA's pynvml library
 
 Moore Threads GPUs use **MUSA** (Meta-computing Unified System Architecture) as their compute platform, analogous to NVIDIA's CUDA.
@@ -93,13 +93,13 @@ def mtmlDeviceGetSomething(device):
 ## Testing Instructions
 
 - **Always run tests before committing**: `python test_pymtml.py && python test_pynvml.py`
-- **Tests require Moore Threads GPU hardware** with driver and libmtml.so installed
+- **Tests require Moore Threads GPU hardware** with driver and MTML library installed (Linux: libmtml.so, Windows: mtml.dll)
 - **Test init/shutdown cycles**: The library supports multiple init/shutdown cycles
 - **Check for segfaults**: Library shutdown must not cause crashes
 
 ## Security Considerations
 
-- This library loads `libmtml.so` dynamically via ctypes
+- This library loads MTML library dynamically via ctypes (Linux: libmtml.so, Windows: mtml.dll)
 - No network operations or external data fetching
 - GPU operations require appropriate system permissions
 - Handle device handles carefully - don't use after shutdown

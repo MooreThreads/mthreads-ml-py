@@ -1,10 +1,15 @@
-from distutils.core import setup
+try:
+    from setuptools import setup
+    from setuptools.dist import DistributionMetadata
+except ImportError:
+    from distutils.core import setup
+    from distutils.dist import DistributionMetadata
+
 from sys import version
 from sys import exit
 
 # earlier versions don't support all classifiers
 if version < '2.2.3':
-    from distutils.dist import DistributionMetadata
     DistributionMetadata.classifiers = None
     DistributionMetadata.download_url = None
 
