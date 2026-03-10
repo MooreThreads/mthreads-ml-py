@@ -1,10 +1,15 @@
-from distutils.core import setup
+try:
+    from setuptools import setup
+    from setuptools.dist import DistributionMetadata
+except ImportError:
+    from distutils.core import setup
+    from distutils.dist import DistributionMetadata
+
 from sys import version
 from sys import exit
 
 # earlier versions don't support all classifiers
 if version < '2.2.3':
-    from distutils.dist import DistributionMetadata
     DistributionMetadata.classifiers = None
     DistributionMetadata.download_url = None
 
@@ -42,7 +47,7 @@ finally:
 
 
 setup(name=_package_name,
-      version='2.2.10',
+      version='2.2.11',
       description='Python Bindings for the Moore Threads GPU Management Library',
       long_description=long_description,
       long_description_content_type='text/markdown',

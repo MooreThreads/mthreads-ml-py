@@ -23,14 +23,14 @@ Python Bindings for Moore Threads Management Library (MTML)
 
 ## 1. 项目简介
 
-**pymtml** 是摩尔线程 GPU 管理库 (MTML) 的 Python 绑定，通过 ctypes 动态加载 `libmtml.so` 共享库，提供对摩尔线程 GPU 设备的监控与管理能力。
+**pymtml** 是摩尔线程 GPU 管理库 (MTML) 的 Python 绑定，通过 ctypes 动态加载 MTML 共享库（Linux: `libmtml.so`, Windows: `mtml.dll`），提供对摩尔线程 GPU 设备的监控与管理能力。
 
 
 ### 核心特性
 
 | 特性 | 说明 |
 | --- | --- |
-| **原生 MTML API** | 直接封装 libmtml.so C 库函数 |
+| **原生 MTML API** | 直接封装 MTML C 库函数（Linux: libmtml.so, Windows: mtml.dll） |
 | **NVML 兼容层** | 提供 pynvml 的替代接口，支持一行替换 |
 | **上下文管理器** | 提供 `with` 语句管理 GPU/Memory/VPU 子组件生命周期 |
 | **多 GPU 支持** | 支持多卡拓扑查询、P2P 状态检测、MtLink 互连检测 |
@@ -66,13 +66,42 @@ mthreads-ml-py/
 
 验证驱动是否安装：
 
+### Linux
+
 ```bash
-# 检查 libmtml.so 是否可用
+# 检查 MTML 库是否可用
 ldconfig -p | grep libmtml
 
 # 检查 GPU 设备
 ls /dev/dri/render*
 ```
+
+### Windows
+
+#### 方式一：检查mtml.dll是否在PATH中
+
+```cmd
+where mtml.dll
+```
+如果MTML已正确安装并加入系统PATH，将会看到类似输出：
+
+```
+C:\Program Files\MooreThreads\MTML\bin\mtml.dll
+```
+
+#### 方式二：使用Python验证（推荐）
+
+```python
+import ctypes
+
+try:
+    ctypes.WinDLL("mtml.dll")
+    print("MTML runtime is available.")
+except OSError as e:
+    print("MTML runtime not found:", e)
+```
+如果 DLL 可以被成功加载，则说明 MTML 运行时已正确安装。
+
 
 ---
 
@@ -193,7 +222,7 @@ pynvml.nvmlShutdown()
 
 | 函数 | 说明 |
 | --- | --- |
-| `mtmlLibraryInit()` | 初始化 MTML 库，加载 `libmtml.so` |
+| `mtmlLibraryInit()` | 初始化 MTML 库，加载 MTML 共享库（Linux: libmtml.so, Windows: mtml.dll） |
 | `mtmlLibraryShutDown()` | 关闭库接口（库本身保持加载） |
 | `mtmlLibraryGetVersion()` | 获取 MTML 库版本号 |
 | `mtmlLibraryCountDevice()` | 获取 GPU 设备数量 |
@@ -999,7 +1028,7 @@ pymtml.MTMLError_DriverNotLoaded: Driver Not Loaded
 
 **原因**：摩尔线程 GPU 驱动未加载或不在当前环境中可用（例如在沙箱、容器中运行时）。
 
-**解决**：确认 GPU 驱动已安装，`libmtml.so` 在 `LD_LIBRARY_PATH` 中。
+**解决**：确认 GPU 驱动已安装，MTML 库在系统路径中（Linux: `libmtml.so` 在 `LD_LIBRARY_PATH` 中，Windows: `mtml.dll` 在 `PATH` 中或 `mtml/` 目录下）。
 
 ### Q: `nvmlDeviceGetCudaComputeCapability()` 返回 `(0, 0)`
 

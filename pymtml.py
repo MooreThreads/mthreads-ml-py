@@ -3,6 +3,7 @@
 ##
 from __future__ import annotations
 
+import os
 import string
 import sys
 import threading
@@ -632,6 +633,50 @@ def convertStrBytes(func):
         return wrapper
     return func
 
+def _LoadWindowsLibrary():
+    """
+    Load the MTML library on Windows platform
+    """
+    lib_name = "mtml.dll"
+    lib_loader = WinDLL
+    
+    # Try loading the library with different names
+    try:
+        return lib_loader(lib_name)
+    except OSError as ose:
+        pass
+    
+    # If all attempts failed, try search PATH
+    for p in os.environ.get("PATH", "").split(os.pathsep):
+        if not p:
+            continue
+        candidate = os.path.join(p, lib_name)
+
+        if os.path.isfile(candidate):
+            os.add_dll_directory(p)
+            return WinDLL(candidate)
+    
+    raise OSError(f"Failed to load MTML library on Windows. Tried: {lib_name}")
+
+def _LoadLinuxLibrary():
+    """
+    Load the MTML library on Linux/Unix platform
+    """
+    lib_name = "libmtml.so"
+    lib_loader = CDLL
+    
+    # Try loading the library with different names
+    last_error = None
+    try:
+        return lib_loader(lib_name)
+    except OSError as ose:
+        last_error = ose
+    
+    # If failed, raise detailed error
+    error_msg = f"Failed to load MTML library on Linux. Tried: {lib_name}"
+    if last_error:
+        error_msg += f"\nLast error: {last_error}"
+    raise OSError(error_msg)
 
 ## C function wrappers ##
 def _LoadMtmlLibrary():
@@ -647,13 +692,18 @@ def _LoadMtmlLibrary():
         try:
             # ensure the library still isn't loaded
             if mtmlLib == None:
-                try:
-                    # assume linux
-                    mtmlLib = CDLL("libmtml.so")
-                except OSError as ose:
-                    _mtmlCheckReturn(MTML_ERROR_FUNCTION_NOT_FOUND)
+                # Platform-specific library loading
+                platform = sys.platform
+                
+                if platform.startswith("win32") or platform.startswith("cygwin"):
+                    # Windows platform
+                    mtmlLib = _LoadWindowsLibrary()
+                else:
+                    # Linux/Unix platform
+                    mtmlLib = _LoadLinuxLibrary()
+
                 if mtmlLib == None:
-                    _mtmlCheckReturn(MTML_ERROR_FUNCTION_NOT_FOUND)
+                    raise OSError("Failed to load MTML library on platform: " + platform)
         finally:
             # lock is always freed
             libLoadLock.release()
