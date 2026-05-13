@@ -334,12 +334,14 @@ class c_mtmlMtLinkSpec_t(_PrintableStructure):
 
 
 class c_mtmlPciInfo_t(_PrintableStructure):
+    # Matches MtmlPciInfo in mtml_2.2.0.h (104 bytes).
     _fields_ = [
         ("sbdf", c_char * MTML_DEVICE_PCI_SBDF_BUFFER_SIZE),
         ("segment", c_uint),
         ("bus", c_uint),
         ("device", c_uint),
         ("pciDeviceId", c_uint),
+        ("pciSubsystemId", c_uint),
         ("busWidth", c_uint),
         ("pciMaxSpeed", c_float),
         ("pciCurSpeed", c_float),
@@ -347,8 +349,7 @@ class c_mtmlPciInfo_t(_PrintableStructure):
         ("pciCurWidth", c_uint),
         ("pciMaxGen", c_uint),
         ("pciCurGen", c_uint),
-        ("busId", c_char * MTML_DEVICE_PCI_BUS_ID_BUFFER_SIZE),
-        ("rsvd", c_uint * 6),
+        ("rsvd", c_int * 6),
     ]
 
 
@@ -365,8 +366,9 @@ class c_mtmlDeviceProperty_t(_PrintableStructure):
 
 ## PCI slot info structure
 class c_mtmlPciSlotInfo_t(_PrintableStructure):
+    # Matches MtmlPciSlotInfo in mtml_2.2.0.h (52 bytes).
     _fields_ = [
-        ("slotType", c_uint),
+        ("slotId", c_uint),
         ("slotName", c_char * MTML_DEVICE_SLOT_NAME_BUFFER_SIZE),
         ("rsvd", c_uint * 4),
     ]
@@ -374,38 +376,43 @@ class c_mtmlPciSlotInfo_t(_PrintableStructure):
 
 ## Display interface spec structure
 class c_mtmlDispIntfSpec_t(_PrintableStructure):
+    # Matches MtmlDispIntfSpec in mtml_2.2.0.h (48 bytes).
     _fields_ = [
         ("type", c_uint),
-        ("maxResWidth", c_uint),
-        ("maxResHeight", c_uint),
-        ("rsvd", c_uint * 4),
+        ("maxHoriRes", c_uint),
+        ("maxVertRes", c_uint),
+        ("maxRefreshRate", c_float),
+        ("rsvd", c_uint * 8),
     ]
 
 
 ## Virtualization type structure
 class c_mtmlVirtType_t(_PrintableStructure):
+    # Matches MtmlVirtType in mtml_2.2.0.h (136 bytes).
     _fields_ = [
         ("id", c_char * MTML_VIRT_TYPE_ID_BUFFER_SIZE),
-        ("deviceClass", c_char * MTML_VIRT_TYPE_CLASS_BUFFER_SIZE),
         ("name", c_char * MTML_VIRT_TYPE_NAME_BUFFER_SIZE),
+        ("api", c_char * MTML_VIRT_TYPE_API_BUFFER_SIZE),
+        ("horizontalResolution", c_uint),
+        ("verticalResolution", c_uint),
+        ("frameBuffer", c_uint),
+        ("maxEncodeNum", c_uint),
+        ("maxDecodeNum", c_uint),
         ("maxInstances", c_uint),
-        ("memSize", c_ulonglong),
-        ("gpuCores", c_uint),
-        ("maxResWidth", c_uint),
-        ("maxResHeight", c_uint),
-        ("apiType", c_char * MTML_VIRT_TYPE_API_BUFFER_SIZE),
-        ("encoderNum", c_uint),
-        ("decoderNum", c_uint),
-        ("rsvd", c_uint * 4),
+        ("maxVirtualDisplay", c_uint),
+        ("rsvd", c_int * 11),
     ]
 
 
 ## Codec utilization structure
 class c_mtmlCodecUtil_t(_PrintableStructure):
+    # Matches MtmlCodecUtil in mtml_2.2.0.h (24 bytes).
     _fields_ = [
-        ("encodeUtil", c_uint),
-        ("decodeUtil", c_uint),
-        ("rsvd", c_uint * 4),
+        ("util", c_uint),
+        ("period", c_uint),
+        ("encUtil", c_uint),
+        ("decUtil", c_uint),
+        ("rsvd", c_int * 2),
     ]
 
 
@@ -420,12 +427,17 @@ class c_mtmlCodecSessionState_t(_PrintableStructure):
 
 ## Codec session metrics structure
 class c_mtmlCodecSessionMetrics_t(_PrintableStructure):
+    # Matches MtmlCodecSessionMetrics in mtml_2.2.0.h (48 bytes).
     _fields_ = [
-        ("width", c_uint),
-        ("height", c_uint),
+        ("id", c_uint),
+        ("pid", c_uint),
+        ("hResolution", c_uint),
+        ("vResolution", c_uint),
+        ("frameRate", c_uint),
+        ("bitRate", c_uint),
+        ("latency", c_uint),
         ("codecType", c_uint),
-        ("fps", c_uint),
-        ("rsvd", c_uint * 4),
+        ("rsvd", c_int * 4),
     ]
 
 
@@ -441,23 +453,25 @@ class c_mtmlLogConfiguration_t(_PrintableStructure):
 
 ## MPC profile structure
 class c_mtmlMpcProfile_t(_PrintableStructure):
+    # Matches MtmlMpcProfile in mtml_2.2.0.h (88 bytes).
     _fields_ = [
-        ("profileId", c_uint),
+        ("id", c_uint),
+        ("coreCount", c_uint),
+        ("memorySizeMB", c_ulonglong),
         ("name", c_char * MTML_MPC_PROFILE_NAME_BUFFER_SIZE),
-        ("memSize", c_ulonglong),
-        ("gpuCores", c_uint),
-        ("rsvd", c_uint * 4),
+        ("rsvd", c_uint * 10),
     ]
 
 
 ## MPC configuration structure
 class c_mtmlMpcConfiguration_t(_PrintableStructure):
+    # Matches MtmlMpcConfiguration in mtml_2.2.0.h (196 bytes).
+    # profileId is signed int (-1 sentinel meaning "no profile in this slot").
     _fields_ = [
         ("id", c_uint),
         ("name", c_char * MTML_MPC_CONF_NAME_BUFFER_SIZE),
-        ("profileNum", c_uint),
-        ("profileIds", c_uint * MTML_MPC_CONF_MAX_PROF_NUM),
-        ("rsvd", c_uint * 4),
+        ("profileId", c_int * MTML_MPC_CONF_MAX_PROF_NUM),
+        ("rsvd", c_uint * 24),
     ]
 
 
@@ -863,10 +877,6 @@ def mtmlDeviceGetPciInfo(device):
     fn = _mtmlGetFunctionPointer("mtmlDeviceGetPciInfo")
     ret = fn(device, byref(c_pciinfo))
     _mtmlCheckReturn(ret)
-    # If busId is empty or invalid (contains non-printable chars), fill it with sbdf
-    bus_id = c_pciinfo.busId
-    if not bus_id or not bus_id[0].isalnum():
-        c_pciinfo.busId = c_pciinfo.sbdf
     return c_pciinfo
 
 @convertStrBytes
@@ -2038,7 +2048,7 @@ def nvmlDeviceGetEncoderUtilization(device):
     try:
         with mtmlVpuContext(device) as vpu:
             util = mtmlVpuGetUtilization(vpu)
-            return [util.encodeUtil, 0]  # samplingPeriodUs not available
+            return [util.encUtil, 0]  # samplingPeriodUs not available
     except MTMLError:
         return [0, 0]
 
@@ -2047,7 +2057,7 @@ def nvmlDeviceGetDecoderUtilization(device):
     try:
         with mtmlVpuContext(device) as vpu:
             util = mtmlVpuGetUtilization(vpu)
-            return [util.decodeUtil, 0]  # samplingPeriodUs not available
+            return [util.decUtil, 0]  # samplingPeriodUs not available
     except MTMLError:
         return [0, 0]
 

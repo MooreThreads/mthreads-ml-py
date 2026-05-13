@@ -77,13 +77,13 @@ class MtmlTestSuite:
         print_section(f"Device {device_idx} - PCI APIs")
 
         test_error("PCI Info", lambda: mtmlDeviceGetPciInfo(device))
-        # Verify busId is populated (should be filled from sbdf if empty)
+        # Verify sbdf (the canonical PCI bus identifier) is populated
         pci_info = mtmlDeviceGetPciInfo(device)
-        if pci_info.busId and pci_info.busId[0].isalnum():
-            print_result("PCI Info busId populated", pci_info.busId)
+        if pci_info.sbdf and pci_info.sbdf[0:1].isalnum():
+            print_result("PCI Info sbdf populated", pci_info.sbdf)
         else:
             print_result(
-                "PCI Info busId populated", "[FAIL: busId is empty or invalid]"
+                "PCI Info sbdf populated", "[FAIL: sbdf is empty or invalid]"
             )
         test_error("PCIe Slot Info", lambda: mtmlDeviceGetPcieSlotInfo(device))
 

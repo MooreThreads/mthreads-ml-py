@@ -42,8 +42,8 @@ for i in range(mtmlLibraryCountDevice()):
         if profile_count > 0:
             profiles = mtmlDeviceGetSupportedMpcProfiles(device, profile_count)
             for p in profiles:
-                print(f"    ID={p.profileId}, 名称={p.name}, "
-                      f"显存={p.memSize / 1024**3:.1f}GB, 核心数={p.gpuCores}")
+                print(f"    ID={p.id}, 名称={p.name}, "
+                      f"显存={p.memorySizeMB / 1024:.1f}GB, 核心数={p.coreCount}")
     except MTMLError as e:
         print(f"  MPC 配置文件: [不可用: {e}]")
 
@@ -75,9 +75,8 @@ for i in range(mtmlLibraryCountDevice()):
         if supported > 0:
             virt_types = mtmlDeviceGetSupportedVirtTypes(device, supported)
             for vt in virt_types:
-                print(f"    ID={vt.id}, 名称={vt.name}, 类别={vt.deviceClass}")
-                print(f"      最大实例数={vt.maxInstances}, 显存={vt.memSize / 1024**3:.1f}GB, "
-                      f"核心数={vt.gpuCores}")
+                print(f"    ID={vt.id}, 名称={vt.name}, API={vt.api}")
+                print(f"      最大实例数={vt.maxInstances}, 显存={vt.frameBuffer / 1024:.1f}GB")
     except MTMLError as e:
         print(f"  支持的虚拟化类型: [不可用: {e}]")
 

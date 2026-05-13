@@ -37,7 +37,6 @@ for i in range(device_count):
     # PCI 信息
     pci = pynvml.nvmlDeviceGetPciInfo(handle)
     print(f"  PCI SBDF: {pci.sbdf}")
-    print(f"  PCI BusId: {pci.busId}")
 
     # 显存信息 (返回 NVMLMemoryInfo dataclass)
     mem = pynvml.nvmlDeviceGetMemoryInfo(handle)
@@ -113,7 +112,7 @@ for i in range(device_count):
     try:
         remote_pci = pynvml.nvmlDeviceGetNvLinkRemotePciInfo(handle, 0)
         if remote_pci:
-            print(f"  NvLink/MtLink 链路0 远端 PCI: {remote_pci.busId}")
+            print(f"  NvLink/MtLink 链路0 远端 PCI: {remote_pci.sbdf}")
     except pynvml.NVMLError:
         pass
 

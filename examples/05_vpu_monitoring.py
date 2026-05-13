@@ -25,8 +25,8 @@ for i in range(mtmlLibraryCountDevice()):
 
             # 编解码利用率
             util = mtmlVpuGetUtilization(vpu)
-            print(f"  编码利用率:   {util.encodeUtil}%")
-            print(f"  解码利用率:   {util.decodeUtil}%")
+            print(f"  编码利用率:   {util.encUtil}%")
+            print(f"  解码利用率:   {util.decUtil}%")
 
             # 编解码容量
             enc_cap, dec_cap = mtmlVpuGetCodecCapacity(vpu)
@@ -41,8 +41,8 @@ for i in range(mtmlLibraryCountDevice()):
                 for s in enc_states:
                     if s.state == MTML_CODEC_SESSION_STATE_ACTIVE:
                         metrics = mtmlVpuGetEncoderSessionMetrics(vpu, s.sessionId)
-                        print(f"    编码会话 {s.sessionId}: {metrics.width}x{metrics.height}, "
-                              f"codec={metrics.codecType}, fps={metrics.fps}")
+                        print(f"    编码会话 {s.sessionId}: {metrics.hResolution}x{metrics.vResolution}, "
+                              f"codec={metrics.codecType}, fps={metrics.frameRate}")
                         break
             except MTMLError:
                 print(f"  活跃编码会话: [不可用]")
@@ -55,8 +55,8 @@ for i in range(mtmlLibraryCountDevice()):
                 for s in dec_states:
                     if s.state == MTML_CODEC_SESSION_STATE_ACTIVE:
                         metrics = mtmlVpuGetDecoderSessionMetrics(vpu, s.sessionId)
-                        print(f"    解码会话 {s.sessionId}: {metrics.width}x{metrics.height}, "
-                              f"codec={metrics.codecType}, fps={metrics.fps}")
+                        print(f"    解码会话 {s.sessionId}: {metrics.hResolution}x{metrics.vResolution}, "
+                              f"codec={metrics.codecType}, fps={metrics.frameRate}")
                         break
             except MTMLError:
                 print(f"  活跃解码会话: [不可用]")

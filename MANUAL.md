@@ -362,7 +362,7 @@ with mtmlVpuContext(device) as vpu:
     util = mtmlVpuGetUtilization(vpu)
     enc_cap, dec_cap = mtmlVpuGetCodecCapacity(vpu)
     print(f"VPU Clock: {clock} MHz")
-    print(f"Encode Util: {util.encodeUtil}%, Decode Util: {util.decodeUtil}%")
+    print(f"Encode Util: {util.encUtil}%, Decode Util: {util.decUtil}%")
     print(f"Codec Capacity: Enc={enc_cap}, Dec={dec_cap}")
 ```
 

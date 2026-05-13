@@ -38,7 +38,7 @@ for i in range(mtmlLibraryCountDevice()):
                 spec = mtmlDeviceGetDisplayInterfaceSpec(device, d)
                 type_name = disp_type_names.get(spec.type, f"Unknown({spec.type})")
                 print(f"    接口 {d}: {type_name}, "
-                      f"最大分辨率 {spec.maxResWidth}x{spec.maxResHeight}")
+                      f"最大分辨率 {spec.maxHoriRes}x{spec.maxVertRes}")
             except MTMLError as e:
                 print(f"    接口 {d}: [不可用: {e}]")
     except MTMLError as e:

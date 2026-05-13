@@ -196,12 +196,12 @@ class PynvmlTestSuite:
         print_section("PCI APIs")
 
         test_api("nvmlDeviceGetPciInfo", lambda: pynvml.nvmlDeviceGetPciInfo(device))
-        # Verify busId is populated (should be filled from sbdf if empty)
+        # Verify sbdf (the canonical PCI bus identifier) is populated
         pci_info = pynvml.nvmlDeviceGetPciInfo(device)
-        if pci_info.busId and pci_info.busId[0].isalnum():
-            print_result("nvmlDeviceGetPciInfo busId populated", pci_info.busId)
+        if pci_info.sbdf and pci_info.sbdf[0:1].isalnum():
+            print_result("nvmlDeviceGetPciInfo sbdf populated", pci_info.sbdf)
         else:
-            print_result("nvmlDeviceGetPciInfo busId populated", "[FAIL: busId is empty or invalid]")
+            print_result("nvmlDeviceGetPciInfo sbdf populated", "[FAIL: sbdf is empty or invalid]")
         test_api(
             "nvmlDeviceGetPcieThroughput (TX)",
             lambda: pynvml.nvmlDeviceGetPcieThroughput(

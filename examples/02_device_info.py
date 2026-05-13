@@ -39,7 +39,6 @@ for i in range(mtmlLibraryCountDevice()):
     # PCI 信息
     pci = mtmlDeviceGetPciInfo(device)
     print(f"  PCI SBDF:   {pci.sbdf}")
-    print(f"  PCI Bus ID: {pci.busId}")
     print(f"  PCI 设备ID: {pci.pciDeviceId:#010x}")
     print(f"  PCIe 代数:  当前 Gen{pci.pciCurGen} / 最大 Gen{pci.pciMaxGen}")
     print(f"  PCIe 宽度:  当前 x{pci.pciCurWidth} / 最大 x{pci.pciMaxWidth}")
@@ -48,7 +47,7 @@ for i in range(mtmlLibraryCountDevice()):
     # PCIe 插槽信息
     try:
         slot = mtmlDeviceGetPcieSlotInfo(device)
-        print(f"  PCIe 插槽:  {slot.slotName} (type={slot.slotType})")
+        print(f"  PCIe 插槽:  {slot.slotName} (id={slot.slotId})")
     except MTMLError as e:
         print(f"  PCIe 插槽:  [不可用: {e}]")
 
