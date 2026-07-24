@@ -12,7 +12,8 @@ Moore Threads GPUs use MUSA (Meta-computing Unified System Architecture) as thei
 
 - Python 3.7+
 - Moore Threads GPU driver with MTML library installed
-- **Linux**: The `libmtml.so` shared library must be in the library path
+- **Linux**: `libmtml.so.2` (preferred) or the legacy `libmtml.so` must be in
+  the library path
 - **Windows**: The `mtml.dll` library must be in the system PATH or in the `mtml/` directory relative to the script
 
 ## Installation

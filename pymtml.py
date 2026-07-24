@@ -662,20 +662,25 @@ def _LoadLinuxLibrary():
     """
     Load the MTML library on Linux/Unix platform
     """
-    lib_name = "libmtml.so"
     lib_loader = CDLL
-    
-    # Try loading the library with different names
-    last_error = None
-    try:
-        return lib_loader(lib_name)
-    except OSError as ose:
-        last_error = ose
-    
-    # If failed, raise detailed error
-    error_msg = f"Failed to load MTML library on Linux. Tried: {lib_name}"
-    if last_error:
-        error_msg += f"\nLast error: {last_error}"
+    lib_names = ("libmtml.so.2", "libmtml.so")
+    load_errors = []
+
+    # Prefer the versioned runtime shipped by current MUSA images. Older
+    # host/runtime installations expose only libmtml.so, so retain it as a
+    # fallback for backwards compatibility.
+    for lib_name in lib_names:
+        try:
+            return lib_loader(lib_name)
+        except OSError as ose:
+            load_errors.append(f"{lib_name}: {ose}")
+
+    error_msg = (
+        "Failed to load MTML library on Linux. "
+        f"Tried: {', '.join(lib_names)}"
+    )
+    if load_errors:
+        error_msg += "\nLoad errors:\n" + "\n".join(load_errors)
     raise OSError(error_msg)
 
 ## C function wrappers ##
