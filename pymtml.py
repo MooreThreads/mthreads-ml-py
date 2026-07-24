@@ -272,8 +272,9 @@ class mtmlFriendlyObject(object):
 
 def mtmlStructToFriendlyObject(struct):
     d = {}
-    for x in struct._fields_:
-        key = x[0]
+    field_names = [field[0] for field in struct._fields_]
+    field_names.extend(getattr(struct, "_compat_fields_", ()))
+    for key in field_names:
         value = getattr(struct, key)
         # only need to convert from bytes if bytes, no need to check python version.
         d[key] = value.decode() if isinstance(value, bytes) else value
@@ -347,6 +348,8 @@ class c_mtmlMtLinkSpec_t(_PrintableStructure):
 
 
 class c_mtmlPciInfo_t(_PrintableStructure):
+    _compat_fields_ = ("busId",)
+
     _fields_ = [
         ("sbdf", c_char * MTML_DEVICE_PCI_SBDF_BUFFER_SIZE),
         ("segment", c_uint),
@@ -368,9 +371,19 @@ class c_mtmlPciInfo_t(_PrintableStructure):
     def busId(self):
         return self.sbdf
 
+    @busId.setter
+    def busId(self, value):
+        self.sbdf = value
+
 
 ## Device property structure
 class c_mtmlDeviceProperty_t(_PrintableStructure):
+    _compat_fields_ = (
+        "virtCapability",
+        "mpcCapability",
+        "mtLinkCapability",
+    )
+
     _fields_ = [
         ("virtCap", c_uint, 1),
         ("virtRole", c_uint, 3),
@@ -408,6 +421,8 @@ class c_mtmlDeviceProperty_t(_PrintableStructure):
 
 ## PCI slot info structure
 class c_mtmlPciSlotInfo_t(_PrintableStructure):
+    _compat_fields_ = ("slotType",)
+
     _fields_ = [
         ("slotId", c_uint),
         ("slotName", c_char * MTML_DEVICE_SLOT_NAME_BUFFER_SIZE),
@@ -418,9 +433,15 @@ class c_mtmlPciSlotInfo_t(_PrintableStructure):
     def slotType(self):
         return self.slotId
 
+    @slotType.setter
+    def slotType(self, value):
+        self.slotId = value
+
 
 ## Display interface spec structure
 class c_mtmlDispIntfSpec_t(_PrintableStructure):
+    _compat_fields_ = ("maxHoriRes", "maxVertRes")
+
     _fields_ = [
         ("type", c_uint),
         ("maxResWidth", c_uint),
@@ -440,6 +461,17 @@ class c_mtmlDispIntfSpec_t(_PrintableStructure):
 
 ## Virtualization type structure
 class c_mtmlVirtType_t(_PrintableStructure):
+    _compat_fields_ = (
+        "deviceClass",
+        "apiType",
+        "maxResWidth",
+        "maxResHeight",
+        "memSize",
+        "gpuCores",
+        "encoderNum",
+        "decoderNum",
+    )
+
     _fields_ = [
         ("id", c_char * MTML_VIRT_TYPE_ID_BUFFER_SIZE),
         ("name", c_char * MTML_VIRT_TYPE_NAME_BUFFER_SIZE),
@@ -489,6 +521,8 @@ class c_mtmlVirtType_t(_PrintableStructure):
 
 ## Codec utilization structure
 class c_mtmlCodecUtil_t(_PrintableStructure):
+    _compat_fields_ = ("encodeUtil", "decodeUtil")
+
     _fields_ = [
         ("util", c_uint),
         ("period", c_uint),
@@ -513,6 +547,8 @@ class c_mtmlCodecSessionState_t(c_int):
 
 ## Codec session metrics structure
 class c_mtmlCodecSessionMetrics_t(_PrintableStructure):
+    _compat_fields_ = ("sessionId", "width", "height", "fps")
+
     _fields_ = [
         ("id", c_uint),
         ("pid", c_uint),
@@ -578,6 +614,8 @@ class c_mtmlLogCallbackConfiguration_t(_PrintableStructure):
 
 ## Log configuration structure
 class c_mtmlLogConfiguration_t(_PrintableStructure):
+    _compat_fields_ = ("filePath", "maxSize", "logLevel")
+
     _fields_ = [
         ("consoleConfig", c_mtmlLogConsoleConfiguration_t),
         ("systemConfig", c_mtmlLogSystemConfiguration_t),
@@ -613,6 +651,8 @@ class c_mtmlLogConfiguration_t(_PrintableStructure):
 
 ## MPC profile structure
 class c_mtmlMpcProfile_t(_PrintableStructure):
+    _compat_fields_ = ("profileId", "gpuCores", "memSize")
+
     _fields_ = [
         ("id", c_uint),
         ("coreCount", c_uint),
@@ -636,6 +676,8 @@ class c_mtmlMpcProfile_t(_PrintableStructure):
 
 ## MPC configuration structure
 class c_mtmlMpcConfiguration_t(_PrintableStructure):
+    _compat_fields_ = ("profileIds", "profileNum")
+
     _fields_ = [
         ("id", c_uint),
         ("name", c_char * MTML_MPC_CONF_NAME_BUFFER_SIZE),
@@ -666,6 +708,8 @@ class c_mtmlMtLinkLayout_t(_PrintableStructure):
 
 ## Page retirement count structure
 class c_mtmlPageRetirementCount_t(_PrintableStructure):
+    _compat_fields_ = ("singleBitEcc", "doubleBitEcc")
+
     _fields_ = [
         ("sbeCount", c_uint),
         ("dbeCount", c_uint),
@@ -682,6 +726,8 @@ class c_mtmlPageRetirementCount_t(_PrintableStructure):
 
 ## Page retirement structure
 class c_mtmlPageRetirement_t(_PrintableStructure):
+    _compat_fields_ = ("timestamp",)
+
     _fields_ = [
         ("timestamps", c_ulonglong),
         ("address", c_ulonglong),
@@ -694,6 +740,8 @@ class c_mtmlPageRetirement_t(_PrintableStructure):
 
 
 class c_mtmlPageRetirementPending_t(_PrintableStructure):
+    _compat_fields_ = ("timestamp",)
+
     _fields_ = [
         ("cause", c_uint),
         ("timestamps", c_ulonglong),

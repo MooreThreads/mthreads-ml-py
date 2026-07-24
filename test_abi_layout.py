@@ -129,6 +129,47 @@ def test_pci_info_matches_header_and_exposes_bus_id_alias():
     assert pci_info.busId == pci_info.sbdf
 
 
+def test_compatibility_aliases_survive_friendly_conversion_and_assignment():
+    pci_info = pymtml.c_mtmlPciInfo_t(busId="00000000:01:00.0")
+    friendly_pci_info = pymtml.nvmlStructToFriendlyObject(pci_info)
+    assert pci_info.sbdf == "00000000:01:00.0"
+    assert friendly_pci_info.busId == "00000000:01:00.0"
+
+    slot_info = pymtml.c_mtmlPciSlotInfo_t(slotType=7)
+    friendly_slot_info = pymtml.mtmlStructToFriendlyObject(slot_info)
+    assert slot_info.slotId == 7
+    assert friendly_slot_info.slotType == 7
+
+    profile = pymtml.c_mtmlMpcProfile_t()
+    profile.id = 3
+    profile.coreCount = 8
+    profile.memorySizeMB = 2048
+    friendly_profile = pymtml.mtmlStructToFriendlyObject(profile)
+    assert friendly_profile.profileId == 3
+    assert friendly_profile.gpuCores == 8
+    assert friendly_profile.memSize == 2048 * 1024 * 1024
+
+    structures_with_aliases = (
+        pymtml.c_mtmlPciInfo_t,
+        pymtml.c_mtmlDeviceProperty_t,
+        pymtml.c_mtmlPciSlotInfo_t,
+        pymtml.c_mtmlDispIntfSpec_t,
+        pymtml.c_mtmlVirtType_t,
+        pymtml.c_mtmlCodecUtil_t,
+        pymtml.c_mtmlCodecSessionMetrics_t,
+        pymtml.c_mtmlLogConfiguration_t,
+        pymtml.c_mtmlMpcProfile_t,
+        pymtml.c_mtmlMpcConfiguration_t,
+        pymtml.c_mtmlPageRetirementCount_t,
+        pymtml.c_mtmlPageRetirement_t,
+        pymtml.c_mtmlPageRetirementPending_t,
+    )
+    for structure_type in structures_with_aliases:
+        structure = structure_type()
+        friendly = pymtml.mtmlStructToFriendlyObject(structure)
+        assert all(hasattr(friendly, name) for name in structure._compat_fields_)
+
+
 def test_compatibility_aliases_use_header_backing_fields():
     prop = pymtml.c_mtmlDeviceProperty_t()
     prop.virtCapability = 1
