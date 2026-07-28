@@ -91,7 +91,7 @@ MTML_CODEC_TYPE_RSVD2 = 15
 MTML_CODEC_TYPE_AV1 = 16
 MTML_CODEC_TYPE_COUNT = 17
 
-_mtmlCodecSessionState_t = c_uint
+_mtmlCodecSessionState_t = c_int
 MTML_CODEC_SESSION_STATE_UNKNOWN = -1
 MTML_CODEC_SESSION_STATE_IDLE = 0
 MTML_CODEC_SESSION_STATE_ACTIVE = 1
@@ -191,6 +191,19 @@ MTML_MTLINK_STATE_DOWN = 0
 MTML_MTLINK_STATE_UP = 1
 MTML_MTLINK_STATE_DOWNGRADE = 2
 
+_mtmlMtLinkCap_t = c_uint
+MTML_MTLINK_CAP_P2P_ACCESS = 0
+MTML_MTLINK_CAP_P2P_ATOMICS = 1
+MTML_MTLINK_CAP_COUNT = 2
+
+_mtmlMtLinkCapStatus_t = c_uint
+MTML_MTLINK_CAP_STATUS_NOT_SUPPORTED = 0
+MTML_MTLINK_CAP_STATUS_OK = 1
+
+_mtmlMtLinkCapability_t = c_uint
+MTML_DEVICE_NOT_SUPPORT_MTLINK = 0
+MTML_DEVICE_SUPPORT_MTLINK = 1
+
 
 ## Library structures
 class struct_c_mtmlLibrary_t(Structure):
@@ -259,8 +272,9 @@ class mtmlFriendlyObject(object):
 
 def mtmlStructToFriendlyObject(struct):
     d = {}
-    for x in struct._fields_:
-        key = x[0]
+    field_names = [field[0] for field in struct._fields_]
+    field_names.extend(getattr(struct, "_compat_fields_", ()))
+    for key in field_names:
         value = getattr(struct, key)
         # only need to convert from bytes if bytes, no need to check python version.
         d[key] = value.decode() if isinstance(value, bytes) else value
@@ -334,12 +348,15 @@ class c_mtmlMtLinkSpec_t(_PrintableStructure):
 
 
 class c_mtmlPciInfo_t(_PrintableStructure):
+    _compat_fields_ = ("busId",)
+
     _fields_ = [
         ("sbdf", c_char * MTML_DEVICE_PCI_SBDF_BUFFER_SIZE),
         ("segment", c_uint),
         ("bus", c_uint),
         ("device", c_uint),
         ("pciDeviceId", c_uint),
+        ("pciSubsystemId", c_uint),
         ("busWidth", c_uint),
         ("pciMaxSpeed", c_float),
         ("pciCurSpeed", c_float),
@@ -347,118 +364,337 @@ class c_mtmlPciInfo_t(_PrintableStructure):
         ("pciCurWidth", c_uint),
         ("pciMaxGen", c_uint),
         ("pciCurGen", c_uint),
-        ("busId", c_char * MTML_DEVICE_PCI_BUS_ID_BUFFER_SIZE),
-        ("rsvd", c_uint * 6),
+        ("rsvd", c_int * 6),
     ]
+
+    @property
+    def busId(self):
+        return self.sbdf
+
+    @busId.setter
+    def busId(self, value):
+        self.sbdf = value
 
 
 ## Device property structure
 class c_mtmlDeviceProperty_t(_PrintableStructure):
+    _compat_fields_ = (
+        "virtCapability",
+        "mpcCapability",
+        "mtLinkCapability",
+    )
+
     _fields_ = [
-        ("virtCapability", c_uint),
-        ("virtRole", c_uint),
-        ("mpcCapability", c_uint),
-        ("mpcType", c_uint),
-        ("rsvd", c_uint * 12),
+        ("virtCap", c_uint, 1),
+        ("virtRole", c_uint, 3),
+        ("mpcCap", c_uint, 1),
+        ("mpcType", c_uint, 3),
+        ("mtLinkCap", c_uint, 1),
+        ("rsvd", c_uint, 23),
+        ("rsvd2", c_uint, 32),
     ]
+
+    @property
+    def virtCapability(self):
+        return self.virtCap
+
+    @virtCapability.setter
+    def virtCapability(self, value):
+        self.virtCap = value
+
+    @property
+    def mpcCapability(self):
+        return self.mpcCap
+
+    @mpcCapability.setter
+    def mpcCapability(self, value):
+        self.mpcCap = value
+
+    @property
+    def mtLinkCapability(self):
+        return self.mtLinkCap
+
+    @mtLinkCapability.setter
+    def mtLinkCapability(self, value):
+        self.mtLinkCap = value
 
 
 ## PCI slot info structure
 class c_mtmlPciSlotInfo_t(_PrintableStructure):
+    _compat_fields_ = ("slotType",)
+
     _fields_ = [
-        ("slotType", c_uint),
+        ("slotId", c_uint),
         ("slotName", c_char * MTML_DEVICE_SLOT_NAME_BUFFER_SIZE),
         ("rsvd", c_uint * 4),
     ]
 
+    @property
+    def slotType(self):
+        return self.slotId
+
+    @slotType.setter
+    def slotType(self, value):
+        self.slotId = value
+
 
 ## Display interface spec structure
 class c_mtmlDispIntfSpec_t(_PrintableStructure):
+    _compat_fields_ = ("maxHoriRes", "maxVertRes")
+
     _fields_ = [
         ("type", c_uint),
         ("maxResWidth", c_uint),
         ("maxResHeight", c_uint),
-        ("rsvd", c_uint * 4),
+        ("maxRefreshRate", c_float),
+        ("rsvd", c_uint * 8),
     ]
+
+    @property
+    def maxHoriRes(self):
+        return self.maxResWidth
+
+    @property
+    def maxVertRes(self):
+        return self.maxResHeight
 
 
 ## Virtualization type structure
 class c_mtmlVirtType_t(_PrintableStructure):
+    _compat_fields_ = (
+        "deviceClass",
+        "apiType",
+        "maxResWidth",
+        "maxResHeight",
+        "memSize",
+        "gpuCores",
+        "encoderNum",
+        "decoderNum",
+    )
+
     _fields_ = [
         ("id", c_char * MTML_VIRT_TYPE_ID_BUFFER_SIZE),
-        ("deviceClass", c_char * MTML_VIRT_TYPE_CLASS_BUFFER_SIZE),
         ("name", c_char * MTML_VIRT_TYPE_NAME_BUFFER_SIZE),
+        ("api", c_char * MTML_VIRT_TYPE_API_BUFFER_SIZE),
+        ("horizontalResolution", c_uint),
+        ("verticalResolution", c_uint),
+        ("frameBuffer", c_uint),
+        ("maxEncodeNum", c_uint),
+        ("maxDecodeNum", c_uint),
         ("maxInstances", c_uint),
-        ("memSize", c_ulonglong),
-        ("gpuCores", c_uint),
-        ("maxResWidth", c_uint),
-        ("maxResHeight", c_uint),
-        ("apiType", c_char * MTML_VIRT_TYPE_API_BUFFER_SIZE),
-        ("encoderNum", c_uint),
-        ("decoderNum", c_uint),
-        ("rsvd", c_uint * 4),
+        ("maxVirtualDisplay", c_uint),
+        ("rsvd", c_int * 11),
     ]
+
+    @property
+    def deviceClass(self):
+        return b""
+
+    @property
+    def apiType(self):
+        return self.api
+
+    @property
+    def maxResWidth(self):
+        return self.horizontalResolution
+
+    @property
+    def maxResHeight(self):
+        return self.verticalResolution
+
+    @property
+    def memSize(self):
+        return self.frameBuffer * 1024 * 1024
+
+    @property
+    def gpuCores(self):
+        return 0
+
+    @property
+    def encoderNum(self):
+        return self.maxEncodeNum
+
+    @property
+    def decoderNum(self):
+        return self.maxDecodeNum
 
 
 ## Codec utilization structure
 class c_mtmlCodecUtil_t(_PrintableStructure):
+    _compat_fields_ = ("encodeUtil", "decodeUtil")
+
     _fields_ = [
-        ("encodeUtil", c_uint),
-        ("decodeUtil", c_uint),
-        ("rsvd", c_uint * 4),
+        ("util", c_uint),
+        ("period", c_uint),
+        ("encUtil", c_uint),
+        ("decUtil", c_uint),
+        ("rsvd", c_int * 2),
     ]
+
+    @property
+    def encodeUtil(self):
+        return self.encUtil
+
+    @property
+    def decodeUtil(self):
+        return self.decUtil
 
 
 ## Codec session state structure
-class c_mtmlCodecSessionState_t(_PrintableStructure):
-    _fields_ = [
-        ("sessionId", c_uint),
-        ("state", c_uint),
-        ("rsvd", c_uint * 4),
-    ]
+class c_mtmlCodecSessionState_t(c_int):
+    pass
 
 
 ## Codec session metrics structure
 class c_mtmlCodecSessionMetrics_t(_PrintableStructure):
+    _compat_fields_ = ("sessionId", "width", "height", "fps")
+
     _fields_ = [
-        ("width", c_uint),
-        ("height", c_uint),
+        ("id", c_uint),
+        ("pid", c_uint),
+        ("hResolution", c_uint),
+        ("vResolution", c_uint),
+        ("frameRate", c_uint),
+        ("bitRate", c_uint),
+        ("latency", c_uint),
         ("codecType", c_uint),
-        ("fps", c_uint),
-        ("rsvd", c_uint * 4),
+        ("rsvd", c_int * 4),
+    ]
+
+    @property
+    def sessionId(self):
+        return self.id
+
+    @property
+    def width(self):
+        return self.hResolution
+
+    @property
+    def height(self):
+        return self.vResolution
+
+    @property
+    def fps(self):
+        return self.frameRate
+
+
+class c_mtmlLogConsoleConfiguration_t(_PrintableStructure):
+    _fields_ = [
+        ("level", c_uint),
+        ("rsvd", c_int * 2),
+    ]
+
+
+class c_mtmlLogSystemConfiguration_t(_PrintableStructure):
+    _fields_ = [
+        ("level", c_uint),
+        ("rsvd", c_int * 2),
+    ]
+
+
+class c_mtmlLogFileConfiguration_t(_PrintableStructure):
+    _fields_ = [
+        ("level", c_uint),
+        ("file", c_char * MTML_LOG_FILE_PATH_BUFFER_SIZE),
+        ("size", c_uint),
+        ("rsvd", c_int * 2),
+    ]
+
+
+_mtmlLogCallback_t = CFUNCTYPE(None, c_char_p, c_uint)
+
+
+class c_mtmlLogCallbackConfiguration_t(_PrintableStructure):
+    _fields_ = [
+        ("level", c_uint),
+        ("callback", _mtmlLogCallback_t),
+        ("rsvd", c_int * 2),
     ]
 
 
 ## Log configuration structure
 class c_mtmlLogConfiguration_t(_PrintableStructure):
+    _compat_fields_ = ("filePath", "maxSize", "logLevel")
+
     _fields_ = [
-        ("filePath", c_char * MTML_LOG_FILE_PATH_BUFFER_SIZE),
-        ("maxSize", c_uint),
-        ("logLevel", c_uint),
-        ("rsvd", c_uint * 4),
+        ("consoleConfig", c_mtmlLogConsoleConfiguration_t),
+        ("systemConfig", c_mtmlLogSystemConfiguration_t),
+        ("fileConfig", c_mtmlLogFileConfiguration_t),
+        ("callbackConfig", c_mtmlLogCallbackConfiguration_t),
+        ("rsvd", c_int * 8),
     ]
+
+    @property
+    def filePath(self):
+        return self.fileConfig.file
+
+    @filePath.setter
+    def filePath(self, value):
+        self.fileConfig.file = value
+
+    @property
+    def maxSize(self):
+        return self.fileConfig.size
+
+    @maxSize.setter
+    def maxSize(self, value):
+        self.fileConfig.size = value
+
+    @property
+    def logLevel(self):
+        return self.fileConfig.level
+
+    @logLevel.setter
+    def logLevel(self, value):
+        self.fileConfig.level = value
 
 
 ## MPC profile structure
 class c_mtmlMpcProfile_t(_PrintableStructure):
+    _compat_fields_ = ("profileId", "gpuCores", "memSize")
+
     _fields_ = [
-        ("profileId", c_uint),
+        ("id", c_uint),
+        ("coreCount", c_uint),
+        ("memorySizeMB", c_ulonglong),
         ("name", c_char * MTML_MPC_PROFILE_NAME_BUFFER_SIZE),
-        ("memSize", c_ulonglong),
-        ("gpuCores", c_uint),
-        ("rsvd", c_uint * 4),
+        ("rsvd", c_uint * 10),
     ]
+
+    @property
+    def profileId(self):
+        return self.id
+
+    @property
+    def gpuCores(self):
+        return self.coreCount
+
+    @property
+    def memSize(self):
+        return self.memorySizeMB * 1024 * 1024
 
 
 ## MPC configuration structure
 class c_mtmlMpcConfiguration_t(_PrintableStructure):
+    _compat_fields_ = ("profileIds", "profileNum")
+
     _fields_ = [
         ("id", c_uint),
         ("name", c_char * MTML_MPC_CONF_NAME_BUFFER_SIZE),
-        ("profileNum", c_uint),
-        ("profileIds", c_uint * MTML_MPC_CONF_MAX_PROF_NUM),
-        ("rsvd", c_uint * 4),
+        ("profileId", c_int * MTML_MPC_CONF_MAX_PROF_NUM),
+        ("rsvd", c_uint * 24),
     ]
+
+    @property
+    def profileIds(self):
+        return self.profileId
+
+    @property
+    def profileNum(self):
+        for index, profile_id in enumerate(self.profileId):
+            if profile_id < 0:
+                return index
+        return len(self.profileId)
 
 
 ## MtLink layout structure
@@ -472,20 +708,50 @@ class c_mtmlMtLinkLayout_t(_PrintableStructure):
 
 ## Page retirement count structure
 class c_mtmlPageRetirementCount_t(_PrintableStructure):
+    _compat_fields_ = ("singleBitEcc", "doubleBitEcc")
+
     _fields_ = [
-        ("singleBitEcc", c_uint),
-        ("doubleBitEcc", c_uint),
-        ("rsvd", c_uint * 4),
+        ("sbeCount", c_uint),
+        ("dbeCount", c_uint),
     ]
+
+    @property
+    def singleBitEcc(self):
+        return self.sbeCount
+
+    @property
+    def doubleBitEcc(self):
+        return self.dbeCount
 
 
 ## Page retirement structure
 class c_mtmlPageRetirement_t(_PrintableStructure):
+    _compat_fields_ = ("timestamp",)
+
     _fields_ = [
+        ("timestamps", c_ulonglong),
         ("address", c_ulonglong),
-        ("timestamp", c_ulonglong),
-        ("rsvd", c_uint * 4),
+        ("rsvd", c_uint * 10),
     ]
+
+    @property
+    def timestamp(self):
+        return self.timestamps
+
+
+class c_mtmlPageRetirementPending_t(_PrintableStructure):
+    _compat_fields_ = ("timestamp",)
+
+    _fields_ = [
+        ("cause", c_uint),
+        ("timestamps", c_ulonglong),
+        ("address", c_ulonglong),
+        ("rsvd", c_uint * 10),
+    ]
+
+    @property
+    def timestamp(self):
+        return self.timestamps
 
 
 ## Lib loading ##
@@ -662,20 +928,25 @@ def _LoadLinuxLibrary():
     """
     Load the MTML library on Linux/Unix platform
     """
-    lib_name = "libmtml.so"
     lib_loader = CDLL
-    
-    # Try loading the library with different names
-    last_error = None
-    try:
-        return lib_loader(lib_name)
-    except OSError as ose:
-        last_error = ose
-    
-    # If failed, raise detailed error
-    error_msg = f"Failed to load MTML library on Linux. Tried: {lib_name}"
-    if last_error:
-        error_msg += f"\nLast error: {last_error}"
+    lib_names = ("libmtml.so.2", "libmtml.so")
+    load_errors = []
+
+    # Prefer the versioned runtime shipped by current MUSA images. Older
+    # host/runtime installations expose only libmtml.so, so retain it as a
+    # fallback for backwards compatibility.
+    for lib_name in lib_names:
+        try:
+            return lib_loader(lib_name)
+        except OSError as ose:
+            load_errors.append(f"{lib_name}: {ose}")
+
+    error_msg = (
+        "Failed to load MTML library on Linux. "
+        f"Tried: {', '.join(lib_names)}"
+    )
+    if load_errors:
+        error_msg += "\nLoad errors:\n" + "\n".join(load_errors)
     raise OSError(error_msg)
 
 ## C function wrappers ##
@@ -863,10 +1134,6 @@ def mtmlDeviceGetPciInfo(device):
     fn = _mtmlGetFunctionPointer("mtmlDeviceGetPciInfo")
     ret = fn(device, byref(c_pciinfo))
     _mtmlCheckReturn(ret)
-    # If busId is empty or invalid (contains non-printable chars), fill it with sbdf
-    bus_id = c_pciinfo.busId
-    if not bus_id or not bus_id[0].isalnum():
-        c_pciinfo.busId = c_pciinfo.sbdf
     return c_pciinfo
 
 @convertStrBytes
@@ -1429,7 +1696,10 @@ def mtmlVpuGetEncoderSessionStates(vpu, length):
     fn = _mtmlGetFunctionPointer("mtmlVpuGetEncoderSessionStates")
     ret = fn(vpu, c_states, c_uint(length))
     _mtmlCheckReturn(ret)
-    return list(c_states)
+    return [
+        mtmlFriendlyObject({"sessionId": index, "state": state.value})
+        for index, state in enumerate(c_states)
+    ]
 
 
 def mtmlVpuGetEncoderSessionMetrics(vpu, sessionId):
@@ -1445,7 +1715,10 @@ def mtmlVpuGetDecoderSessionStates(vpu, length):
     fn = _mtmlGetFunctionPointer("mtmlVpuGetDecoderSessionStates")
     ret = fn(vpu, c_states, c_uint(length))
     _mtmlCheckReturn(ret)
-    return list(c_states)
+    return [
+        mtmlFriendlyObject({"sessionId": index, "state": state.value})
+        for index, state in enumerate(c_states)
+    ]
 
 
 def mtmlVpuGetDecoderSessionMetrics(vpu, sessionId):
