@@ -2492,6 +2492,21 @@ def nvmlDeviceGetP2PStatus(device1, device2, p2pIndex):
             except MTMLError:
                 pass
 
+            # Prefer the pairwise layout API.  A process or container may expose
+            # only a subset of the GPUs on a host while MtLinkSpec still reports
+            # every physical link.  Walking those links asks MTML to materialize
+            # handles for hidden peers and legitimately returns NOT_FOUND.  The
+            # layout query operates only on the two visible handles supplied by
+            # the caller and avoids that ambiguity.
+            try:
+                link_count = mtmlDeviceCountMtLinkLayouts(device1, device2)
+                if link_count > 0:
+                    return NVML_P2P_STATUS_OK
+            except MTMLError:
+                # Older runtimes may not implement the layout API.  Retain the
+                # per-link scan below as a compatibility fallback.
+                pass
+
             # Check MtLink connectivity by iterating through links
             # This is the detailed check: for each link on device1, check if
             # the remote device matches device2's UUID
@@ -2514,14 +2529,6 @@ def nvmlDeviceGetP2PStatus(device1, device2, p2pIndex):
                                 return NVML_P2P_STATUS_OK
                     except MTMLError:
                         continue
-            except MTMLError:
-                pass
-
-            # Fallback: try mtmlDeviceCountMtLinkLayouts as a secondary check
-            try:
-                link_count = mtmlDeviceCountMtLinkLayouts(device1, device2)
-                if link_count > 0:
-                    return NVML_P2P_STATUS_OK
             except MTMLError:
                 pass
 
