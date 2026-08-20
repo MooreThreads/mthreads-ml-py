@@ -47,7 +47,7 @@ finally:
 
 
 setup(name=_package_name,
-      version='2.4.1',
+      version='2.4.2',
       description='Python Bindings for the Moore Threads GPU Management Library',
       long_description=long_description,
       long_description_content_type='text/markdown',
