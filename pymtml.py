@@ -757,6 +757,9 @@ class c_mtmlPageRetirementPending_t(_PrintableStructure):
 ## Lib loading ##
 mtmlLib = None
 libLoadLock = threading.Lock()
+# The Python API exposes one process-wide handle. Keep its native lifetime
+# balanced across nested and concurrent clients independently of library loading.
+libLifecycleLock = threading.Lock()
 libHandle = c_mtmlLibrary_t()
 _mtmlLib_refcount = 0  # Incremented on each mtmlInit and decremented on mtmlShutdown
 
@@ -983,44 +986,34 @@ def _LoadMtmlLibrary():
 def mtmlLibraryInit():
     _LoadMtmlLibrary()
 
-    #
-    # Initialize the library
-    #
-    global libHandle
     fn = _mtmlGetFunctionPointer("mtmlLibraryInit")
-    ret = fn(byref(libHandle))
-    _mtmlCheckReturn(ret)
-
-    # Atomically update refcount
+    global libHandle
     global _mtmlLib_refcount
-    libLoadLock.acquire()
-    _mtmlLib_refcount += 1
-    libLoadLock.release()
+    with libLifecycleLock:
+        if _mtmlLib_refcount == 0:
+            handle = c_mtmlLibrary_t()
+            ret = fn(byref(handle))
+            _mtmlCheckReturn(ret)
+            libHandle = handle
+        _mtmlLib_refcount += 1
     return None
 
 
 def mtmlLibraryShutDown():
-    #
-    # Leave the library loaded, but shutdown the interface
-    #
     global libHandle
-    if libHandle is None:
-        return None
-
-    fn = _mtmlGetFunctionPointer("mtmlLibraryShutDown")
-    ret = fn(libHandle)
-    _mtmlCheckReturn(ret)
-
-    # Reset libHandle to a fresh instance to allow reinitialization
-    # and prevent dangling references during garbage collection
-    libHandle = c_mtmlLibrary_t()
-
-    # Atomically update refcount
     global _mtmlLib_refcount
-    libLoadLock.acquire()
-    if 0 < _mtmlLib_refcount:
-        _mtmlLib_refcount -= 1
-    libLoadLock.release()
+    with libLifecycleLock:
+        if _mtmlLib_refcount == 0:
+            return None
+        if _mtmlLib_refcount > 1:
+            _mtmlLib_refcount -= 1
+            return None
+
+        fn = _mtmlGetFunctionPointer("mtmlLibraryShutDown")
+        ret = fn(libHandle)
+        _mtmlCheckReturn(ret)
+        libHandle = c_mtmlLibrary_t()
+        _mtmlLib_refcount = 0
     return None
 
 
