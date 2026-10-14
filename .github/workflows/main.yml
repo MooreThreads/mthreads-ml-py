@@ -10,6 +10,14 @@ jobs:
         run: mthreads-gmi
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Test hardware-independent units
+        run: |
+          python -m pytest \
+            test_abi_layout.py \
+            test_library_lifecycle.py \
+            test_library_loading.py \
+            test_mtlink_visibility.py \
+            -q
       - name: Test mtml sglang compatibility
         run: python test_sglang_compat.py
       - name: Test mtml

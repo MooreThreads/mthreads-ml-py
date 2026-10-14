@@ -757,7 +757,12 @@ class c_mtmlPageRetirementPending_t(_PrintableStructure):
 ## Lib loading ##
 mtmlLib = None
 libLoadLock = threading.Lock()
+# Keep init/shutdown flow aligned with pynvml. MTML additionally returns one
+# opaque handle per init, so retain every native handle while keeping the first
+# live handle stable for implicit query APIs.
+libLifecycleLock = threading.Lock()
 libHandle = c_mtmlLibrary_t()
+_mtmlLib_handles = []
 _mtmlLib_refcount = 0  # Incremented on each mtmlInit and decremented on mtmlShutdown
 
 
@@ -983,44 +988,38 @@ def _LoadMtmlLibrary():
 def mtmlLibraryInit():
     _LoadMtmlLibrary()
 
-    #
-    # Initialize the library
-    #
-    global libHandle
     fn = _mtmlGetFunctionPointer("mtmlLibraryInit")
-    ret = fn(byref(libHandle))
-    _mtmlCheckReturn(ret)
-
-    # Atomically update refcount
+    global libHandle
+    global _mtmlLib_handles
     global _mtmlLib_refcount
-    libLoadLock.acquire()
-    _mtmlLib_refcount += 1
-    libLoadLock.release()
+    with libLifecycleLock:
+        handle = c_mtmlLibrary_t()
+        ret = fn(byref(handle))
+        _mtmlCheckReturn(ret)
+        _mtmlLib_handles.append(handle)
+        if len(_mtmlLib_handles) == 1:
+            libHandle = handle
+        _mtmlLib_refcount = len(_mtmlLib_handles)
     return None
 
 
 def mtmlLibraryShutDown():
-    #
-    # Leave the library loaded, but shutdown the interface
-    #
     global libHandle
-    if libHandle is None:
-        return None
-
-    fn = _mtmlGetFunctionPointer("mtmlLibraryShutDown")
-    ret = fn(libHandle)
-    _mtmlCheckReturn(ret)
-
-    # Reset libHandle to a fresh instance to allow reinitialization
-    # and prevent dangling references during garbage collection
-    libHandle = c_mtmlLibrary_t()
-
-    # Atomically update refcount
+    global _mtmlLib_handles
     global _mtmlLib_refcount
-    libLoadLock.acquire()
-    if 0 < _mtmlLib_refcount:
-        _mtmlLib_refcount -= 1
-    libLoadLock.release()
+    with libLifecycleLock:
+        if not _mtmlLib_handles:
+            raise MTMLError(MTML_ERROR_UNINITIALIZED)
+
+        handle = _mtmlLib_handles[-1]
+        fn = _mtmlGetFunctionPointer("mtmlLibraryShutDown")
+        ret = fn(handle)
+        _mtmlCheckReturn(ret)
+        _mtmlLib_handles.pop()
+        _mtmlLib_refcount = len(_mtmlLib_handles)
+        libHandle = (
+            _mtmlLib_handles[0] if _mtmlLib_handles else c_mtmlLibrary_t()
+        )
     return None
 
 
