@@ -172,11 +172,11 @@ def test_concurrent_clients_pair_all_native_handles(fake_mtml):
     queried = Barrier(worker_count)
 
     def use_library():
-        start.wait()
+        start.wait(timeout=10)
         pymtml.mtmlLibraryInit()
-        initialized.wait()
+        initialized.wait(timeout=10)
         assert pymtml.mtmlLibraryCountDevice() == 2
-        queried.wait()
+        queried.wait(timeout=10)
         pymtml.mtmlLibraryShutDown()
 
     with ThreadPoolExecutor(max_workers=worker_count) as executor:
