@@ -306,10 +306,16 @@ def main():
         # Test sglang's exact NVLink full connection check pattern
         # This uses the device indices [0, 1, 2, ...] as physical_device_ids
         physical_device_ids = list(range(device_count))
-        test_sglang_nvlink_full_connection(physical_device_ids)
+        full_mesh = test_sglang_nvlink_full_connection(physical_device_ids)
+        full_mesh_result = (
+            "N/A (need 2+ devices)"
+            if device_count < 2
+            else ("YES" if full_mesh else "NO")
+        )
 
         print_section("Test Complete")
-        print("\n  All sglang compatibility tests passed!")
+        print_result("NVLink full mesh", full_mesh_result)
+        print("\n  Compatibility probes completed.")
 
     except pynvml.NVMLError as e:
         print(f"\nNVML Error: {e}")
