@@ -65,7 +65,11 @@ for i in range(device_count):
             pass
     gpu_util_str = "{}%".format(gpu_util) if gpu_util is not None else "N/A"
     gpu_temp_str = "{}°C".format(gpu_temp) if gpu_temp is not None else "N/A"
-    gpu_clock_str = "{}/{} MHz".format(gpu_clock, gpu_max_clock) if (gpu_clock is not None and gpu_max_clock is not None) else "N/A"
+    gpu_clock_str = (
+        "{}/{} MHz".format(gpu_clock, gpu_max_clock)
+        if (gpu_clock is not None and gpu_max_clock is not None)
+        else "N/A"
+    )
 
     mem_total = mem_used = mem_util = mem_clock = mem_max_clock = None
     mem_ctx = _safe(mtmlMemoryContext, None, device)
@@ -84,7 +88,9 @@ for i in range(device_count):
         if mem_util is not None:
             mem_str += " ({}%)".format(mem_util)
         mem_str += "    时钟 " + (
-            "{}/{} MHz".format(mem_clock, mem_max_clock) if (mem_clock is not None and mem_max_clock is not None) else "N/A"
+            "{}/{} MHz".format(mem_clock, mem_max_clock)
+            if (mem_clock is not None and mem_max_clock is not None)
+            else "N/A"
         )
     else:
         mem_str = "N/A"
@@ -101,7 +107,8 @@ for i in range(device_count):
     else:
         pci_str = "N/A"
 
-    print("""
+    print(
+        """
   GPU {}: {}
   ├─ UUID:      {}
   ├─ PCI:       {}
@@ -109,8 +116,18 @@ for i in range(device_count):
   ├─ 温度:      {}    风扇: {}
   ├─ GPU:       利用率 {}    时钟 {}
   └─ 显存:      {}""".format(
-        i, name, uuid, pci_str, power_str, gpu_temp_str, fan_str, gpu_util_str, gpu_clock_str, mem_str
-    ))
+            i,
+            name,
+            uuid,
+            pci_str,
+            power_str,
+            gpu_temp_str,
+            fan_str,
+            gpu_util_str,
+            gpu_clock_str,
+            mem_str,
+        )
+    )
 
 print()
 print("=" * 72)

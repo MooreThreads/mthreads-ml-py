@@ -29,7 +29,9 @@ for i in range(mtmlLibraryCountDevice()):
                     cores.append(word_idx * 64 + bit)
         if cores:
             if len(cores) > 16:
-                print(f"  CPU 核心列表:   {cores[:8]}...{cores[-8:]} (共 {len(cores)} 核心)")
+                print(
+                    f"  CPU 核心列表:   {cores[:8]}...{cores[-8:]} (共 {len(cores)} 核心)"
+                )
             else:
                 print(f"  CPU 核心列表:   {cores}")
     except MTMLError as e:
@@ -62,7 +64,9 @@ try:
     }
     print(f"  日志文件: {log_config.filePath}")
     print(f"  最大大小: {log_config.maxSize}")
-    print(f"  日志级别: {log_level_names.get(log_config.logLevel, f'Unknown({log_config.logLevel})')}")
+    print(
+        f"  日志级别: {log_level_names.get(log_config.logLevel, f'Unknown({log_config.logLevel})')}"
+    )
 except MTMLError as e:
     print(f"  [不可用: {e}]")
 

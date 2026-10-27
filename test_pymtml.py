@@ -4,9 +4,9 @@ Comprehensive test suite for pymtml.py MTML API bindings
 Run with: python test_pymtml.py
 """
 
+import os
 import sys
 import traceback
-import os
 
 from pymtml import *
 

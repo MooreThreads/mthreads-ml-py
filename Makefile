@@ -45,4 +45,3 @@ publish: build
 
 # Run all checks and build
 all: format lint test build
-

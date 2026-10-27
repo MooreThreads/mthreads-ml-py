@@ -7,11 +7,11 @@ import os
 import string
 import sys
 import threading
+from contextlib import contextmanager
 from ctypes import *
 from dataclasses import dataclass
 from functools import wraps
 from typing import TYPE_CHECKING as _TYPE_CHECKING
-from contextlib import contextmanager
 
 if _TYPE_CHECKING:
     from typing_extensions import TypeAlias as _TypeAlias  # Python 3.10+
@@ -904,19 +904,20 @@ def convertStrBytes(func):
         return wrapper
     return func
 
+
 def _LoadWindowsLibrary():
     """
     Load the MTML library on Windows platform
     """
     lib_name = "mtml.dll"
     lib_loader = WinDLL
-    
+
     # Try loading the library with different names
     try:
         return lib_loader(lib_name)
     except OSError as ose:
         pass
-    
+
     # If all attempts failed, try search PATH
     for p in os.environ.get("PATH", "").split(os.pathsep):
         if not p:
@@ -926,8 +927,9 @@ def _LoadWindowsLibrary():
         if os.path.isfile(candidate):
             os.add_dll_directory(p)
             return WinDLL(candidate)
-    
+
     raise OSError(f"Failed to load MTML library on Windows. Tried: {lib_name}")
+
 
 def _LoadLinuxLibrary():
     """
@@ -947,12 +949,12 @@ def _LoadLinuxLibrary():
             load_errors.append(f"{lib_name}: {ose}")
 
     error_msg = (
-        "Failed to load MTML library on Linux. "
-        f"Tried: {', '.join(lib_names)}"
+        "Failed to load MTML library on Linux. " f"Tried: {', '.join(lib_names)}"
     )
     if load_errors:
         error_msg += "\nLoad errors:\n" + "\n".join(load_errors)
     raise OSError(error_msg)
+
 
 ## C function wrappers ##
 def _LoadMtmlLibrary():
@@ -970,7 +972,7 @@ def _LoadMtmlLibrary():
             if mtmlLib == None:
                 # Platform-specific library loading
                 platform = sys.platform
-                
+
                 if platform.startswith("win32") or platform.startswith("cygwin"):
                     # Windows platform
                     mtmlLib = _LoadWindowsLibrary()
@@ -979,7 +981,9 @@ def _LoadMtmlLibrary():
                     mtmlLib = _LoadLinuxLibrary()
 
                 if mtmlLib == None:
-                    raise OSError("Failed to load MTML library on platform: " + platform)
+                    raise OSError(
+                        "Failed to load MTML library on platform: " + platform
+                    )
         finally:
             # lock is always freed
             libLoadLock.release()
@@ -1017,9 +1021,7 @@ def mtmlLibraryShutDown():
         _mtmlCheckReturn(ret)
         _mtmlLib_handles.pop()
         _mtmlLib_refcount = len(_mtmlLib_handles)
-        libHandle = (
-            _mtmlLib_handles[0] if _mtmlLib_handles else c_mtmlLibrary_t()
-        )
+        libHandle = _mtmlLib_handles[0] if _mtmlLib_handles else c_mtmlLibrary_t()
     return None
 
 
@@ -1134,6 +1136,7 @@ def mtmlDeviceGetPciInfo(device):
     ret = fn(device, byref(c_pciinfo))
     _mtmlCheckReturn(ret)
     return c_pciinfo
+
 
 @convertStrBytes
 def mtmlDeviceGetSerialNumber(device):
@@ -1284,6 +1287,7 @@ def mtmlVpuGetMaxClock(vpu):
     ret = fn(vpu, byref(c_clock))
     _mtmlCheckReturn(ret)
     return c_clock.value
+
 
 @convertStrBytes
 def mtmlSystemGetDriverVersion(system):
@@ -1602,6 +1606,7 @@ def mtmlGpuGetEngineUtilization(gpu, engine):
     _mtmlCheckReturn(ret)
     return c_util.value
 
+
 @contextmanager
 def mtmlGpuContext(device):
     c_gpu = None
@@ -1662,6 +1667,7 @@ def mtmlMemoryGetType(memory):
     _mtmlCheckReturn(ret)
     return c_type.value
 
+
 @contextmanager
 def mtmlMemoryContext(device):
     c_memory = None
@@ -1671,6 +1677,7 @@ def mtmlMemoryContext(device):
     finally:
         if c_memory is not None:
             mtmlDeviceFreeMemory(c_memory)
+
 
 ## VPU APIs
 def mtmlVpuGetUtilization(vpu):
@@ -1727,6 +1734,7 @@ def mtmlVpuGetDecoderSessionMetrics(vpu, sessionId):
     _mtmlCheckReturn(ret)
     return c_metrics
 
+
 @contextmanager
 def mtmlVpuContext(device):
     c_vpu = None
@@ -1736,6 +1744,7 @@ def mtmlVpuContext(device):
     finally:
         if c_vpu is not None:
             mtmlDeviceFreeVpu(c_vpu)
+
 
 ## Log configuration APIs
 def mtmlLogSetConfiguration(configuration):

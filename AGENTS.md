@@ -136,4 +136,3 @@ mtmlDeviceFreeMemory(memory)
 - `nvmlDeviceGetCudaComputeCapability()` returns `(0, 0)` unless torch_musa is available
 - Use `patch_torch_c_for_musa()` to patch torch._C with functions from torch_musa._MUSAC
 - PCI busId field may be empty from driver; library auto-fills from sbdf if needed
-
