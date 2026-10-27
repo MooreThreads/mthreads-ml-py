@@ -863,7 +863,7 @@ def _mtmlGetFunctionPointer(name):
     libLoadLock.acquire()
     try:
         # ensure library was loaded
-        if mtmlLib == None:
+        if mtmlLib is None:
             raise MTMLError(MTML_ERROR_FUNCTION_NOT_FOUND)
         try:
             _mtmlGetFunctionPointer_cache[name] = getattr(mtmlLib, name)
@@ -915,7 +915,7 @@ def _LoadWindowsLibrary():
     # Try loading the library with different names
     try:
         return lib_loader(lib_name)
-    except OSError as ose:
+    except OSError:
         pass
 
     # If all attempts failed, try search PATH
@@ -963,13 +963,13 @@ def _LoadMtmlLibrary():
     """
     global mtmlLib
 
-    if mtmlLib == None:
+    if mtmlLib is None:
         # lock to ensure only one caller loads the library
         libLoadLock.acquire()
 
         try:
             # ensure the library still isn't loaded
-            if mtmlLib == None:
+            if mtmlLib is None:
                 # Platform-specific library loading
                 platform = sys.platform
 
@@ -980,7 +980,7 @@ def _LoadMtmlLibrary():
                     # Linux/Unix platform
                     mtmlLib = _LoadLinuxLibrary()
 
-                if mtmlLib == None:
+                if mtmlLib is None:
                     raise OSError(
                         "Failed to load MTML library on platform: " + platform
                     )
@@ -2079,7 +2079,7 @@ NVML_ECC_COUNTER_TYPE_COUNT = 2
 
 _nvmlComputeMode_t = c_uint
 NVML_COMPUTEMODE_DEFAULT = 0
-NVML_COMPUTEMODE_EXCLUSIVE_THREAD = 1  ## Support Removed
+NVML_COMPUTEMODE_EXCLUSIVE_THREAD = 1  # Support Removed
 NVML_COMPUTEMODE_PROHIBITED = 2
 NVML_COMPUTEMODE_EXCLUSIVE_PROCESS = 3
 NVML_COMPUTEMODE_COUNT = 4
@@ -2290,7 +2290,7 @@ def nvmlDeviceGetPowerUsage(device):
     return mtmlDeviceGetPowerUsage(device)
 
 
-# cannot expose this function directly since _nvmlGetFunctionPointer will retrive the function pointer from the mtml library directly.
+# cannot expose this function directly since _nvmlGetFunctionPointer will retrieve the function pointer from the mtml library directly.
 # it will cause a MTMLError_FunctionNotFound exception when we get nvml function pointer from the mtml library.
 # def _nvmlGetFunctionPointer(name):
 #     return _mtmlGetFunctionPointer(name)
@@ -2403,7 +2403,7 @@ def nvmlDeviceGetCudaComputeCapability(device):
     """
     try:
         import torch
-        import torch_musa
+        import torch_musa  # noqa: F401 - registers the MUSA backend for torch
 
         # Get device index from the device handle
         # We need to find which device index this handle corresponds to

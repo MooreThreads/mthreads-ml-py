@@ -49,7 +49,7 @@ for i in range(mtmlLibraryCountDevice()):
                         )
                         break
             except MTMLError:
-                print(f"  活跃编码会话: [不可用]")
+                print("  活跃编码会话: [不可用]")
 
             # 解码器会话状态
             try:
@@ -67,7 +67,7 @@ for i in range(mtmlLibraryCountDevice()):
                         )
                         break
             except MTMLError:
-                print(f"  活跃解码会话: [不可用]")
+                print("  活跃解码会话: [不可用]")
 
     except MTMLError as e:
         print(f"  VPU 不可用: {e}")

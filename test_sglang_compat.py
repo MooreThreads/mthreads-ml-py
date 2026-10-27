@@ -333,7 +333,7 @@ def main():
         try:
             pynvml.nvmlShutdown()
             print("\nLibrary shutdown complete (via pynvml.nvmlShutdown()).")
-        except:
+        except Exception:
             pass
 
     return 0

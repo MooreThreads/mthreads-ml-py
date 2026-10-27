@@ -99,14 +99,14 @@ for i in range(device_count):
     if major > 0:
         print(f"  MUSA 计算能力: {major}.{minor}")
     else:
-        print(f"  MUSA 计算能力: 不可用 (需要 torch_musa)")
+        print("  MUSA 计算能力: 不可用 (需要 torch_musa)")
 
     # NVLink/MtLink 状态 (链路 0)
     try:
         nvlink_state = pynvml.nvmlDeviceGetNvLinkState(handle, 0)
         print(f"  NvLink/MtLink 链路0: {'UP' if nvlink_state else 'DOWN'}")
     except pynvml.NVMLError:
-        print(f"  NvLink/MtLink 链路0: [不可用]")
+        print("  NvLink/MtLink 链路0: [不可用]")
     try:
         cap = pynvml.nvmlDeviceGetNvLinkCapability(handle, 0, 0)
         print(f"  NvLink/MtLink 链路0 能力(0): {cap}")
@@ -121,7 +121,7 @@ for i in range(device_count):
 
 # 多 GPU 时: P2P 与拓扑 (NVML 接口)
 if device_count >= 2:
-    print(f"\n--- 多 GPU: P2P 与拓扑 (NVML) ---")
+    print("\n--- 多 GPU: P2P 与拓扑 (NVML) ---")
     h0 = pynvml.nvmlDeviceGetHandleByIndex(0)
     h1 = pynvml.nvmlDeviceGetHandleByIndex(1)
     try:
@@ -150,5 +150,5 @@ if device_count >= 2:
 
 # 关闭
 pynvml.nvmlShutdown()
-print(f"\n[4] nvmlShutdown() 成功")
+print("\n[4] nvmlShutdown() 成功")
 print("\n完成!")

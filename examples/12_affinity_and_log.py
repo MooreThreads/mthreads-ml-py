@@ -52,7 +52,7 @@ for i in range(mtmlLibraryCountDevice()):
         print(f"  内存亲和性: [不可用: {e}]")
 
 # 日志配置
-print(f"\n--- 日志配置 ---")
+print("\n--- 日志配置 ---")
 try:
     log_config = mtmlLogGetConfiguration()
     log_level_names = {

@@ -408,7 +408,7 @@ def main():
         try:
             mtmlLibraryShutDown()
             print("\nMTML library shutdown complete.")
-        except:
+        except Exception:
             pass
 
     # Test init/shutdown cycle (after main tests complete)
