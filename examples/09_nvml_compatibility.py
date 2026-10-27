@@ -89,22 +89,24 @@ for i in range(device_count):
 
     # ECC
     ecc_current, ecc_pending = pynvml.nvmlDeviceGetEccMode(handle)
-    print(f"  ECC 模式:     当前={'启用' if ecc_current else '禁用'}, "
-          f"待定={'启用' if ecc_pending else '禁用'}")
+    print(
+        f"  ECC 模式:     当前={'启用' if ecc_current else '禁用'}, "
+        f"待定={'启用' if ecc_pending else '禁用'}"
+    )
 
     # MUSA 计算能力 (需要 torch_musa)
     major, minor = pynvml.nvmlDeviceGetCudaComputeCapability(handle)
     if major > 0:
         print(f"  MUSA 计算能力: {major}.{minor}")
     else:
-        print(f"  MUSA 计算能力: 不可用 (需要 torch_musa)")
+        print("  MUSA 计算能力: 不可用 (需要 torch_musa)")
 
     # NVLink/MtLink 状态 (链路 0)
     try:
         nvlink_state = pynvml.nvmlDeviceGetNvLinkState(handle, 0)
         print(f"  NvLink/MtLink 链路0: {'UP' if nvlink_state else 'DOWN'}")
     except pynvml.NVMLError:
-        print(f"  NvLink/MtLink 链路0: [不可用]")
+        print("  NvLink/MtLink 链路0: [不可用]")
     try:
         cap = pynvml.nvmlDeviceGetNvLinkCapability(handle, 0, 0)
         print(f"  NvLink/MtLink 链路0 能力(0): {cap}")
@@ -119,13 +121,19 @@ for i in range(device_count):
 
 # 多 GPU 时: P2P 与拓扑 (NVML 接口)
 if device_count >= 2:
-    print(f"\n--- 多 GPU: P2P 与拓扑 (NVML) ---")
+    print("\n--- 多 GPU: P2P 与拓扑 (NVML) ---")
     h0 = pynvml.nvmlDeviceGetHandleByIndex(0)
     h1 = pynvml.nvmlDeviceGetHandleByIndex(1)
     try:
-        p2p_read = pynvml.nvmlDeviceGetP2PStatus(h0, h1, pynvml.NVML_P2P_CAPS_INDEX_READ)
-        p2p_write = pynvml.nvmlDeviceGetP2PStatus(h0, h1, pynvml.NVML_P2P_CAPS_INDEX_WRITE)
-        p2p_nvlink = pynvml.nvmlDeviceGetP2PStatus(h0, h1, pynvml.NVML_P2P_CAPS_INDEX_NVLINK)
+        p2p_read = pynvml.nvmlDeviceGetP2PStatus(
+            h0, h1, pynvml.NVML_P2P_CAPS_INDEX_READ
+        )
+        p2p_write = pynvml.nvmlDeviceGetP2PStatus(
+            h0, h1, pynvml.NVML_P2P_CAPS_INDEX_WRITE
+        )
+        p2p_nvlink = pynvml.nvmlDeviceGetP2PStatus(
+            h0, h1, pynvml.NVML_P2P_CAPS_INDEX_NVLINK
+        )
         print(f"  P2P 读: {p2p_read}, 写: {p2p_write}, NvLink/MtLink: {p2p_nvlink}")
     except pynvml.NVMLError as e:
         print(f"  P2P: [不可用: {e}]")
@@ -142,5 +150,5 @@ if device_count >= 2:
 
 # 关闭
 pynvml.nvmlShutdown()
-print(f"\n[4] nvmlShutdown() 成功")
+print("\n[4] nvmlShutdown() 成功")
 print("\n完成!")

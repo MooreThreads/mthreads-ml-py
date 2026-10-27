@@ -35,7 +35,7 @@ for i in range(mtmlLibraryCountDevice()):
         print(f"  GPU 时钟:     {clock} / {max_clock} MHz")
 
         # 各引擎利用率
-        print(f"  引擎利用率:")
+        print("  引擎利用率:")
         for engine_id, engine_name in engine_names.items():
             try:
                 engine_util = mtmlGpuGetEngineUtilization(gpu, engine_id)

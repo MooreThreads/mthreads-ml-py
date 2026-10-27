@@ -28,7 +28,9 @@ for i in range(mtmlLibraryCountDevice()):
         MTML_MPC_TYPE_INSTANCE: "MPC 实例",
     }
     print(f"  MPC 支持:     {'是' if mpc_cap else '否'}")
-    print(f"  MPC 类型:     {mpc_type_names.get(prop.mpcType, f'Unknown({prop.mpcType})')}")
+    print(
+        f"  MPC 类型:     {mpc_type_names.get(prop.mpcType, f'Unknown({prop.mpcType})')}"
+    )
 
     try:
         mode = mtmlDeviceGetMpcMode(device)
@@ -42,8 +44,10 @@ for i in range(mtmlLibraryCountDevice()):
         if profile_count > 0:
             profiles = mtmlDeviceGetSupportedMpcProfiles(device, profile_count)
             for p in profiles:
-                print(f"    ID={p.profileId}, 名称={p.name}, "
-                      f"显存={p.memSize / 1024**3:.1f}GB, 核心数={p.gpuCores}")
+                print(
+                    f"    ID={p.profileId}, 名称={p.name}, "
+                    f"显存={p.memSize / 1024**3:.1f}GB, 核心数={p.gpuCores}"
+                )
     except MTMLError as e:
         print(f"  MPC 配置文件: [不可用: {e}]")
 
@@ -67,7 +71,9 @@ for i in range(mtmlLibraryCountDevice()):
         MTML_VIRT_ROLE_GUEST_VIRTDEVICE: "虚拟机虚拟设备",
     }
     print(f"\n  虚拟化支持:   {'是' if virt_cap else '否'}")
-    print(f"  虚拟化角色:   {virt_role_names.get(prop.virtRole, f'Unknown({prop.virtRole})')}")
+    print(
+        f"  虚拟化角色:   {virt_role_names.get(prop.virtRole, f'Unknown({prop.virtRole})')}"
+    )
 
     try:
         supported = mtmlDeviceCountSupportedVirtTypes(device)
@@ -76,8 +82,10 @@ for i in range(mtmlLibraryCountDevice()):
             virt_types = mtmlDeviceGetSupportedVirtTypes(device, supported)
             for vt in virt_types:
                 print(f"    ID={vt.id}, 名称={vt.name}, 类别={vt.deviceClass}")
-                print(f"      最大实例数={vt.maxInstances}, 显存={vt.memSize / 1024**3:.1f}GB, "
-                      f"核心数={vt.gpuCores}")
+                print(
+                    f"      最大实例数={vt.maxInstances}, 显存={vt.memSize / 1024**3:.1f}GB, "
+                    f"核心数={vt.gpuCores}"
+                )
     except MTMLError as e:
         print(f"  支持的虚拟化类型: [不可用: {e}]")
 

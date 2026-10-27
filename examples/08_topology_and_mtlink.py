@@ -23,7 +23,7 @@ for i in range(device_count):
     print(f"  设备 {i}: {name}")
 
 # MtLink 信息
-print(f"\n--- MtLink 信息 ---")
+print("\n--- MtLink 信息 ---")
 mtlink_state_names = {
     MTML_MTLINK_STATE_DOWN: "断开",
     MTML_MTLINK_STATE_UP: "连接",
@@ -75,7 +75,7 @@ if device_count >= 2:
         MTML_TOPOLOGY_SYSTEM: "跨NUMA节点",
     }
 
-    print(f"\n--- 拓扑关系矩阵 ---")
+    print("\n--- 拓扑关系矩阵 ---")
     for i in range(device_count):
         for j in range(i + 1, device_count):
             try:
@@ -86,36 +86,54 @@ if device_count >= 2:
                 print(f"  设备 {i} <-> 设备 {j}: [不可用: {e}]")
 
     # P2P 状态
-    print(f"\n--- P2P 状态 ---")
+    print("\n--- P2P 状态 ---")
     for i in range(device_count):
         for j in range(i + 1, device_count):
             try:
-                read_status = mtmlDeviceGetP2PStatus(devices[i], devices[j], MTML_P2P_CAPS_READ)
-                write_status = mtmlDeviceGetP2PStatus(devices[i], devices[j], MTML_P2P_CAPS_WRITE)
-                read_ok = "OK" if read_status == MTML_P2P_STATUS_OK else f"Status={read_status}"
-                write_ok = "OK" if write_status == MTML_P2P_STATUS_OK else f"Status={write_status}"
+                read_status = mtmlDeviceGetP2PStatus(
+                    devices[i], devices[j], MTML_P2P_CAPS_READ
+                )
+                write_status = mtmlDeviceGetP2PStatus(
+                    devices[i], devices[j], MTML_P2P_CAPS_WRITE
+                )
+                read_ok = (
+                    "OK"
+                    if read_status == MTML_P2P_STATUS_OK
+                    else f"Status={read_status}"
+                )
+                write_ok = (
+                    "OK"
+                    if write_status == MTML_P2P_STATUS_OK
+                    else f"Status={write_status}"
+                )
                 print(f"  设备 {i} <-> 设备 {j}: 读={read_ok}, 写={write_ok}")
             except MTMLError as e:
                 print(f"  设备 {i} <-> 设备 {j}: [不可用: {e}]")
 
     # MtLink 布局
-    print(f"\n--- MtLink 布局 ---")
+    print("\n--- MtLink 布局 ---")
     for i in range(device_count):
         for j in range(i + 1, device_count):
             try:
                 link_count = mtmlDeviceCountMtLinkLayouts(devices[i], devices[j])
                 print(f"  设备 {i} <-> 设备 {j}: {link_count} 条链路")
                 if link_count > 0:
-                    layouts = mtmlDeviceGetMtLinkLayouts(devices[i], devices[j], link_count)
+                    layouts = mtmlDeviceGetMtLinkLayouts(
+                        devices[i], devices[j], link_count
+                    )
                     for layout in layouts:
-                        print(f"    本地链路ID={layout.localLinkId} <-> 远程链路ID={layout.remoteLinkId}")
+                        print(
+                            f"    本地链路ID={layout.localLinkId} <-> 远程链路ID={layout.remoteLinkId}"
+                        )
             except MTMLError as e:
                 print(f"  设备 {i} <-> 设备 {j}: [不可用: {e}]")
 
     # MtLink 最短路径 (两设备间)
-    print(f"\n--- MtLink 最短路径 ---")
+    print("\n--- MtLink 最短路径 ---")
     try:
-        path_count, path_length = mtmlDeviceCountMtLinkShortestPaths(devices[0], devices[1])
+        path_count, path_length = mtmlDeviceCountMtLinkShortestPaths(
+            devices[0], devices[1]
+        )
         print(f"  设备 0 -> 设备 1: {path_count} 条路径, 长度 {path_length}")
         if path_count > 0 and path_length > 0:
             paths = mtmlDeviceGetMtLinkShortestPaths(
@@ -127,12 +145,14 @@ if device_count >= 2:
         print(f"  [不可用: {e}]")
 
     # 按拓扑层级统计设备 / 获取同层级设备
-    print(f"\n--- 按拓扑层级设备 ---")
+    print("\n--- 按拓扑层级设备 ---")
     for level in range(MTML_TOPOLOGY_SYSTEM + 1):
         try:
             count = mtmlDeviceCountDeviceByTopologyLevel(devices[0], level)
             if count > 0:
-                level_devs = mtmlDeviceGetDeviceByTopologyLevel(devices[0], level, count)
+                level_devs = mtmlDeviceGetDeviceByTopologyLevel(
+                    devices[0], level, count
+                )
                 print(f"  层级 {level}: {count} 个设备 (GetDeviceByTopologyLevel)")
         except MTMLError:
             pass

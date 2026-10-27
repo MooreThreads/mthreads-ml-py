@@ -4,9 +4,9 @@ Comprehensive test suite for pymtml.py MTML API bindings
 Run with: python test_pymtml.py
 """
 
+import os
 import sys
 import traceback
-import os
 
 from pymtml import *
 
@@ -408,7 +408,7 @@ def main():
         try:
             mtmlLibraryShutDown()
             print("\nMTML library shutdown complete.")
-        except:
+        except Exception:
             pass
 
     # Test init/shutdown cycle (after main tests complete)

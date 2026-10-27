@@ -1,0 +1,48 @@
+# Hooks every change to this repository has to pass.
+#
+#   pre-commit install              # run them on every commit
+#   pre-commit run --all-files      # check the whole tree (formatting hooks fix)
+#
+# The checks mirror what the Makefile used to call directly (flake8 with the
+# same limits, isort, black); pre-commit provisions each tool in its own
+# environment, so no global install of them is needed.
+default_stages: [pre-commit, manual]
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-ast
+      - id: check-yaml
+      - id: end-of-file-fixer
+        exclude: ^mtml_2\.2\.0\.h$
+      - id: trailing-whitespace
+        exclude: ^mtml_2\.2\.0\.h$
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: debug-statements
+  - repo: https://github.com/PyCQA/isort
+    rev: 7.0.0
+    hooks:
+      - id: isort
+  - repo: https://github.com/psf/black
+    rev: 26.1.0
+    hooks:
+      - id: black
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.1.1
+    hooks:
+      - id: flake8
+        # The Makefile's limits, extended rather than replaced so flake8's own
+        # defaults keep working. E203 is what black produces; E266 allows the
+        # `##` banner comments this file has always used; F403/F405 cover the
+        # `from pymtml import *` that the examples and tests are meant to use.
+        args: ["--max-line-length=120", "--extend-ignore=E203,E501,W503,E266,F403,F405"]
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        # musa/mtml/pymtml and renderD (from the /dev/dri/renderD128 path) are
+        # names, not misspellings. The vendored C header keeps its own text.
+        exclude: ^mtml_2\.2\.0\.h$
+        args: ['-L', 'musa,musas,mtml,musa_,pymtml,renderD']

@@ -64,7 +64,9 @@ class PynvmlTestSuite:
             return None
 
         # Get UUID for testing GetHandleByUuid
-        _, uuid = test_api("nvmlDeviceGetUUID", lambda: pynvml.nvmlDeviceGetUUID(handle))
+        _, uuid = test_api(
+            "nvmlDeviceGetUUID", lambda: pynvml.nvmlDeviceGetUUID(handle)
+        )
         if uuid:
             test_api(
                 "nvmlDeviceGetHandleByUuid",
@@ -92,7 +94,8 @@ class PynvmlTestSuite:
         test_api("nvmlDeviceGetSerial", lambda: pynvml.nvmlDeviceGetSerial(device))
         test_api("nvmlDeviceGetBrand", lambda: pynvml.nvmlDeviceGetBrand(device))
         test_api(
-            "nvmlDeviceGetVbiosVersion", lambda: pynvml.nvmlDeviceGetVbiosVersion(device)
+            "nvmlDeviceGetVbiosVersion",
+            lambda: pynvml.nvmlDeviceGetVbiosVersion(device),
         )
         test_api(
             "nvmlDeviceGetMinorNumber", lambda: pynvml.nvmlDeviceGetMinorNumber(device)
@@ -201,7 +204,10 @@ class PynvmlTestSuite:
         if pci_info.busId and pci_info.busId[0].isalnum():
             print_result("nvmlDeviceGetPciInfo busId populated", pci_info.busId)
         else:
-            print_result("nvmlDeviceGetPciInfo busId populated", "[FAIL: busId is empty or invalid]")
+            print_result(
+                "nvmlDeviceGetPciInfo busId populated",
+                "[FAIL: busId is empty or invalid]",
+            )
         test_api(
             "nvmlDeviceGetPcieThroughput (TX)",
             lambda: pynvml.nvmlDeviceGetPcieThroughput(
@@ -419,4 +425,3 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
-

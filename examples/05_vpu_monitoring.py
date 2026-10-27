@@ -36,30 +36,38 @@ for i in range(mtmlLibraryCountDevice()):
             # 编码器会话状态
             try:
                 enc_states = mtmlVpuGetEncoderSessionStates(vpu, 8)
-                active_enc = sum(1 for s in enc_states if s.state == MTML_CODEC_SESSION_STATE_ACTIVE)
+                active_enc = sum(
+                    1 for s in enc_states if s.state == MTML_CODEC_SESSION_STATE_ACTIVE
+                )
                 print(f"  活跃编码会话: {active_enc}")
                 for s in enc_states:
                     if s.state == MTML_CODEC_SESSION_STATE_ACTIVE:
                         metrics = mtmlVpuGetEncoderSessionMetrics(vpu, s.sessionId)
-                        print(f"    编码会话 {s.sessionId}: {metrics.width}x{metrics.height}, "
-                              f"codec={metrics.codecType}, fps={metrics.fps}")
+                        print(
+                            f"    编码会话 {s.sessionId}: {metrics.width}x{metrics.height}, "
+                            f"codec={metrics.codecType}, fps={metrics.fps}"
+                        )
                         break
             except MTMLError:
-                print(f"  活跃编码会话: [不可用]")
+                print("  活跃编码会话: [不可用]")
 
             # 解码器会话状态
             try:
                 dec_states = mtmlVpuGetDecoderSessionStates(vpu, 8)
-                active_dec = sum(1 for s in dec_states if s.state == MTML_CODEC_SESSION_STATE_ACTIVE)
+                active_dec = sum(
+                    1 for s in dec_states if s.state == MTML_CODEC_SESSION_STATE_ACTIVE
+                )
                 print(f"  活跃解码会话: {active_dec}")
                 for s in dec_states:
                     if s.state == MTML_CODEC_SESSION_STATE_ACTIVE:
                         metrics = mtmlVpuGetDecoderSessionMetrics(vpu, s.sessionId)
-                        print(f"    解码会话 {s.sessionId}: {metrics.width}x{metrics.height}, "
-                              f"codec={metrics.codecType}, fps={metrics.fps}")
+                        print(
+                            f"    解码会话 {s.sessionId}: {metrics.width}x{metrics.height}, "
+                            f"codec={metrics.codecType}, fps={metrics.fps}"
+                        )
                         break
             except MTMLError:
-                print(f"  活跃解码会话: [不可用]")
+                print("  活跃解码会话: [不可用]")
 
     except MTMLError as e:
         print(f"  VPU 不可用: {e}")

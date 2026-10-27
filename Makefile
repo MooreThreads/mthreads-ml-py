@@ -3,27 +3,32 @@
 # Default Python interpreter
 PYTHON ?= python3
 
+# The lint and format tools are pinned in .pre-commit-config.yaml; pre-commit
+# provisions each one in its own environment, so no global install is needed.
+PRECOMMIT ?= pre-commit
+
 # Package name
 PACKAGE = pymtml
 
 help:
 	@echo "Available targets:"
-	@echo "  format    - Format code with isort + black"
-	@echo "  lint      - Run linter (flake8)"
+	@echo "  format    - Format the tree with the pinned pre-commit hooks"
+	@echo "  lint      - Run the read-only checks (flake8, codespell, ast)"
 	@echo "  test      - Run tests"
 	@echo "  build     - Build wheel package"
 	@echo "  clean     - Clean build artifacts"
 	@echo "  publish   - Upload wheel to PyPI"
 	@echo "  all       - Format, lint, test, build"
 
-# Format code using isort + black
+# Format the tree (isort, black, whitespace and end-of-file hooks)
 format:
-	$(PYTHON) -m isort $(PACKAGE).py example.py test_*.py
-	$(PYTHON) -m black $(PACKAGE).py example.py test_*.py
+	$(PRECOMMIT) run --all-files
 
-# Lint code using flake8
+# Read-only checks: lint, spelling and syntax, the same hooks the gate runs
 lint:
-	$(PYTHON) -m flake8 $(PACKAGE).py example.py --max-line-length=120 --ignore=E501,W503
+	$(PRECOMMIT) run flake8 --all-files
+	$(PRECOMMIT) run codespell --all-files
+	$(PRECOMMIT) run check-ast --all-files
 
 # Run tests
 test:
@@ -45,4 +50,3 @@ publish: build
 
 # Run all checks and build
 all: format lint test build
-

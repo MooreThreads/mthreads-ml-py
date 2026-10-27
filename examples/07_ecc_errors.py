@@ -28,8 +28,11 @@ for i in range(mtmlLibraryCountDevice()):
         # 已纠正错误 (Volatile)
         try:
             corrected_vol = mtmlMemoryGetEccErrorCounter(
-                memory, MTML_MEMORY_ERROR_TYPE_CORRECTED,
-                MTML_VOLATILE_ECC, MTML_MEMORY_LOCATION_DRAM)
+                memory,
+                MTML_MEMORY_ERROR_TYPE_CORRECTED,
+                MTML_VOLATILE_ECC,
+                MTML_MEMORY_LOCATION_DRAM,
+            )
             print(f"  已纠正错误 (当前会话): {corrected_vol}")
         except MTMLError as e:
             print(f"  已纠正错误 (当前会话): [不可用: {e}]")
@@ -37,8 +40,11 @@ for i in range(mtmlLibraryCountDevice()):
         # 未纠正错误 (Volatile)
         try:
             uncorrected_vol = mtmlMemoryGetEccErrorCounter(
-                memory, MTML_MEMORY_ERROR_TYPE_UNCORRECTED,
-                MTML_VOLATILE_ECC, MTML_MEMORY_LOCATION_DRAM)
+                memory,
+                MTML_MEMORY_ERROR_TYPE_UNCORRECTED,
+                MTML_VOLATILE_ECC,
+                MTML_MEMORY_LOCATION_DRAM,
+            )
             print(f"  未纠正错误 (当前会话): {uncorrected_vol}")
         except MTMLError as e:
             print(f"  未纠正错误 (当前会话): [不可用: {e}]")
@@ -46,8 +52,11 @@ for i in range(mtmlLibraryCountDevice()):
         # 已纠正错误 (Aggregate)
         try:
             corrected_agg = mtmlMemoryGetEccErrorCounter(
-                memory, MTML_MEMORY_ERROR_TYPE_CORRECTED,
-                MTML_AGGREGATE_ECC, MTML_MEMORY_LOCATION_DRAM)
+                memory,
+                MTML_MEMORY_ERROR_TYPE_CORRECTED,
+                MTML_AGGREGATE_ECC,
+                MTML_MEMORY_LOCATION_DRAM,
+            )
             print(f"  已纠正错误 (累计): {corrected_agg}")
         except MTMLError as e:
             print(f"  已纠正错误 (累计): [不可用: {e}]")
@@ -55,8 +64,11 @@ for i in range(mtmlLibraryCountDevice()):
         # 未纠正错误 (Aggregate)
         try:
             uncorrected_agg = mtmlMemoryGetEccErrorCounter(
-                memory, MTML_MEMORY_ERROR_TYPE_UNCORRECTED,
-                MTML_AGGREGATE_ECC, MTML_MEMORY_LOCATION_DRAM)
+                memory,
+                MTML_MEMORY_ERROR_TYPE_UNCORRECTED,
+                MTML_AGGREGATE_ECC,
+                MTML_MEMORY_LOCATION_DRAM,
+            )
             print(f"  未纠正错误 (累计): {uncorrected_agg}")
         except MTMLError as e:
             print(f"  未纠正错误 (累计): [不可用: {e}]")
